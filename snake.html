@@ -152,12 +152,41 @@ canvas {
   border-bottom: 1px solid #1a1a3e;
   font-size: 0.95rem;
 }
-.lb-table tr:nth-child(1) td { color: #f5d76e; font-weight: 700; }
-.lb-table tr:nth-child(2) td { color: #c0c0c0; }
-.lb-table tr:nth-child(3) td { color: #cd7f32; }
 .lb-table .rank { text-align: center; width: 36px; }
-.lb-table .name { }
 .lb-table .pts { text-align: right; font-weight: 700; color: #4fc3f7; }
+
+/* 1 место — золото */
+.lb-table tr.top-1 td {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1.05rem;
+  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,0,0.06));
+  border-top: 2px solid #ffd700;
+  border-bottom: 2px solid #ffd700;
+  text-shadow: 0 0 8px rgba(255,215,0,0.3);
+}
+.lb-table tr.top-1 td:first-child { border-left: 2px solid #ffd700; border-radius: 8px 0 0 8px; }
+.lb-table tr.top-1 td:last-child { border-right: 2px solid #ffd700; border-radius: 0 8px 8px 0; }
+.lb-table tr.top-1 .pts { color: #ffd700; }
+.lb-table tr.top-1 .rank::before { content: ''; }
+
+/* 2 место — серебро */
+.lb-table tr.top-2 td {
+  color: #c0c0c0;
+  font-weight: 600;
+  background: rgba(192,192,192,0.06);
+  border-bottom: 1px solid rgba(192,192,192,0.3);
+}
+.lb-table tr.top-2 .pts { color: #c0c0c0; }
+
+/* 3 место — бронза */
+.lb-table tr.top-3 td {
+  color: #cd7f32;
+  font-weight: 600;
+  background: rgba(205,127,50,0.06);
+  border-bottom: 1px solid rgba(205,127,50,0.3);
+}
+.lb-table tr.top-3 .pts { color: #cd7f32; }
 .lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
 </style>
 </head>
@@ -353,9 +382,12 @@ function renderLeaderboard() {
     .then(r => r.json())
     .then(lb => {
       if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
+      const medals = ['', '', ''];
       let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
       lb.forEach((r, i) => {
-        html += `<tr><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+        const cls = i < 3 ? ` class="top-${i + 1}"` : '';
+        const medal = medals[i] || '';
+        html += `<tr${cls}><td class="rank">${medal || (i + 1)}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
       });
       html += '</table>';
       el.innerHTML = html;
