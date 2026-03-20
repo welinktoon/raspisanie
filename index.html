@@ -201,7 +201,7 @@ const lectures = {
     subjects: [
       { name: 'МГ (лекция)', dates: ['09.02','02.03','16.03','06.04','20.04','04.05','18.05'] },
       { name: 'ФКХ (лекция)', dates: ['16.02','09.03','23.03','13.04','27.04','11.05','25.05'] },
-      { name: 'ПАТ (лекция)', dates: ['30.03'] }
+      { name: 'ПАТ (лекция)', dates: ['30.03'], room: 'Морф.к.' }
     ]
   },
   2: { // Вторник 9:10
@@ -229,7 +229,7 @@ const lectures = {
     time: '9:10–10:40', room: 'Я208',
     subjects: [
       { name: 'ОФХ (лекция)', dates: ['20.02','06.03','20.03','10.04','24.04','08.05','15.05','22.05','29.05','05.06'] },
-      { name: 'ПАТ (лекция)', dates: ['13.02','27.02','13.03','27.03','03.04','17.04'] }
+      { name: 'ПАТ (лекция)', dates: ['13.02','27.02','13.03','27.03','03.04','17.04'], room: 'Морф.к.' }
     ]
   },
   '5b': { // Пятница 15:20 — вторая лекция
@@ -289,7 +289,7 @@ function getLectureForDate(dayIdx, dateStr) {
   const lec = lectures[dayIdx];
   if (lec) {
     for (const s of lec.subjects) {
-      if (s.dates.includes(dateStr)) return { time: lec.time, name: s.name, room: lec.room };
+      if (s.dates.includes(dateStr)) return { time: lec.time, name: s.name, room: s.room || lec.room };
     }
   }
   return null;
