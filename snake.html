@@ -188,6 +188,49 @@ canvas {
 }
 .lb-table tr.top-3 .pts { color: #cd7f32; }
 .lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
+
+/* Выбор скина */
+.skins-toggle {
+  margin-top: 12px;
+  background: none;
+  border: 1px solid #4fc3f7;
+  color: #4fc3f7;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.skins-toggle:hover { background: rgba(79,195,247,0.1); }
+.skins-panel {
+  display: none;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+.skins-panel.open { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 2px solid #1a1a3e;
+  border-radius: 10px;
+  background: #16213e;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  width: 68px;
+}
+.skin-card:hover { transform: scale(1.05); }
+.skin-card.active { border-color: #4fc3f7; box-shadow: 0 0 10px rgba(79,195,247,0.3); }
+.skin-preview { display: flex; gap: 2px; }
+.skin-preview span {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: block;
+}
+.skin-label { font-size: 0.7rem; color: #8899aa; text-align: center; }
 </style>
 </head>
 <body>
@@ -199,6 +242,9 @@ canvas {
 <canvas id="game"></canvas>
 
 <button id="start-btn">Играть</button>
+
+<button class="skins-toggle" id="skins-toggle">Расцветка</button>
+<div class="skins-panel" id="skins-panel"></div>
 
 <div class="controls" id="controls" style="display:none;">
   <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
@@ -223,6 +269,31 @@ canvas {
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzPfAYsmjlI1Gy1jb8H-c1u1QZMMBz5gDgwhxXJZEMJpNCo3p671Xl8imKHqPXv8-xa/exec';
+
+const SKINS = {
+  classic: {
+    name: 'Классика',
+    head: '#4fc3f7',
+    body: ['#7dcea0']
+  },
+  rainbow: {
+    name: 'Радуга',
+    head: '#ff0000',
+    body: ['#ff0000','#ff8c00','#ffd700','#32cd32','#00bfff','#4169e1','#9b59b6']
+  },
+  armenia: {
+    name: 'Армения',
+    head: '#d90012',
+    body: ['#d90012','#0033a0','#f2a800']
+  },
+  russia: {
+    name: 'Россия',
+    head: '#ffffff',
+    body: ['#ffffff','#0039a6','#d52b1e']
+  }
+};
+let currentSkin = 'classic';
+
 const CELL = 20;
 const COLS = 15;
 const ROWS = 20;
@@ -279,9 +350,14 @@ function draw() {
   ctx.fill();
 
   // Змейка
+  const skin = SKINS[currentSkin];
   snake.forEach((seg, i) => {
-    const r = CELL / 2 - 1;
-    ctx.fillStyle = i === 0 ? '#4fc3f7' : '#7dcea0';
+    if (i === 0) {
+      ctx.fillStyle = skin.head;
+    } else {
+      const colors = skin.body;
+      ctx.fillStyle = colors[(i - 1) % colors.length];
+    }
     ctx.beginPath();
     ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
     ctx.fill();
@@ -400,6 +476,30 @@ function esc(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+
+// Скины
+function renderSkins() {
+  const panel = document.getElementById('skins-panel');
+  panel.innerHTML = '';
+  for (const [key, skin] of Object.entries(SKINS)) {
+    const card = document.createElement('div');
+    card.className = 'skin-card' + (key === currentSkin ? ' active' : '');
+    const preview = skin.body.slice(0, 5).map(c => `<span style="background:${c}"></span>`).join('');
+    card.innerHTML = `<div class="skin-preview">${preview}</div><div class="skin-label">${skin.name}</div>`;
+    card.addEventListener('click', () => {
+      currentSkin = key;
+      renderSkins();
+      draw();
+    });
+    panel.appendChild(card);
+  }
+}
+
+document.getElementById('skins-toggle').addEventListener('click', () => {
+  document.getElementById('skins-panel').classList.toggle('open');
+});
+
+renderSkins();
 
 // Инициализация
 init();
