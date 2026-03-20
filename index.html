@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание занятий</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 1.6rem;
+    color: #fff;
+  }
+  .week {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .day {
+    background: #16213e;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .day:hover { transform: translateY(-4px); }
+  .day.today { box-shadow: 0 0 0 2px #4fc3f7, 0 4px 20px rgba(79,195,247,0.3); }
+  .day-header {
+    padding: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+  }
+  .day-header.mon { background: #e8a87c; color: #333; }
+  .day-header.tue { background: #f5d76e; color: #333; }
+  .day-header.wed { background: #7dcea0; color: #333; }
+  .day-header.thu { background: #85c1e9; color: #333; }
+  .day-header.fri { background: #c39bd3; color: #333; }
+  .lesson {
+    padding: 12px 14px;
+    border-bottom: 1px solid #1a1a3e;
+  }
+  .lesson:last-child { border-bottom: none; }
+  .lesson-time {
+    font-size: 0.82rem;
+    color: #8899aa;
+    margin-bottom: 4px;
+  }
+  .lesson-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+  }
+  .lesson-room {
+    font-size: 0.85rem;
+    color: #6dbfb8;
+    margin-top: 2px;
+  }
+  .lesson.active {
+    background: rgba(79, 195, 247, 0.12);
+    border-left: 3px solid #4fc3f7;
+  }
+  .badge-now {
+    display: inline-block;
+    background: #4fc3f7;
+    color: #1a1a2e;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .no-classes {
+    padding: 30px 14px;
+    text-align: center;
+    color: #556;
+    font-style: italic;
+  }
+  #clock {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #8899aa;
+  }
+  @media (max-width: 768px) {
+    .week {
+      grid-template-columns: 1fr;
+      max-width: 420px;
+    }
+    .day { margin-bottom: 4px; }
+    .day:not(.today) .lesson { display: none; }
+    .day:not(.today) .day-header::after {
+      content: ' (нажмите)';
+      font-weight: 400;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    .day.expanded .lesson { display: block; }
+    .day.expanded .day-header::after { content: ''; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Расписание занятий</h1>
+<div id="clock"></div>
+
+<div class="week" id="week"></div>
+
+<script>
+const schedule = [
+  {
+    day: 'Понедельник', short: 'mon', idx: 1,
+    lessons: [
+      { time: '8:30–10:00', name: 'Лекция', room: 'Я208' },
+      { time: '10:30–12:45', name: 'МФА', room: 'Я112' },
+      { time: '14:10–15:40', name: 'ГИГ', room: 'Дистант' }
+    ]
+  },
+  {
+    day: 'Вторник', short: 'tue', idx: 2,
+    lessons: [
+      { time: '9:10–10:40', name: 'Лекция', room: 'Я208' },
+      { time: '11:10–12:40', name: 'ФКХ', room: 'А205' },
+      { time: '13:10–14:40', name: 'БОТ', room: 'Комс-ая (3 эт)' }
+    ]
+  },
+  {
+    day: 'Среда', short: 'wed', idx: 3,
+    lessons: [
+      { time: '9:10–10:40', name: 'Лекция', room: 'Я208' },
+      { time: '11:10–13:25', name: 'ОФХ', room: 'Я112' },
+      { time: '14:10–16:25', name: 'ПАТ', room: 'Морф. 4эт. 2к' },
+      { time: '16:50–18:20', name: 'ФКС', room: 'Стадион' }
+    ]
+  },
+  {
+    day: 'Четверг', short: 'thu', idx: 4,
+    lessons: [
+      { time: '9:10–10:40', name: 'Лекция', room: 'Я208' },
+      { time: '11:10–13:25', name: 'ФР', room: 'Комс-ая (2 эт)' },
+      { time: '14:10–15:40', name: 'ПДвФ', room: 'Я112' }
+    ]
+  },
+  {
+    day: 'Пятница', short: 'fri', idx: 5,
+    lessons: [
+      { time: '9:10–10:40', name: 'Лекция', room: 'Я208' },
+      { time: '11:10–12:40', name: 'МБХ', room: 'А215' },
+      { time: '13:30–15:00', name: 'МГ', room: 'Аптека' },
+      { time: '15:20–16:50', name: 'Лекция', room: 'Я208' }
+    ]
+  }
+];
+
+function parseTime(s) {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function getRange(timeStr) {
+  const parts = timeStr.replace(/\u2013/g, '-').split('-');
+  return { start: parseTime(parts[0].trim()), end: parseTime(parts[1].trim()) };
+}
+
+function render() {
+  const now = new Date();
+  const todayIdx = now.getDay(); // 0=Sun
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const weekEl = document.getElementById('week');
+  weekEl.innerHTML = '';
+
+  schedule.forEach(d => {
+    const isToday = d.idx === todayIdx;
+    const dayEl = document.createElement('div');
+    dayEl.className = 'day' + (isToday ? ' today' : '');
+    dayEl.innerHTML = `<div class="day-header ${d.short}">${d.day}</div>`;
+
+    d.lessons.forEach(l => {
+      const r = getRange(l.time);
+      const active = isToday && nowMin >= r.start && nowMin < r.end;
+      const div = document.createElement('div');
+      div.className = 'lesson' + (active ? ' active' : '');
+      div.innerHTML = `
+        <div class="lesson-time">${l.time}${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}</div>
+        <div class="lesson-name">${l.name}</div>
+        <div class="lesson-room">${l.room}</div>
+      `;
+      dayEl.appendChild(div);
+    });
+
+    dayEl.addEventListener('click', () => dayEl.classList.toggle('expanded'));
+    weekEl.appendChild(dayEl);
+  });
+
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) +
+    ', ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+render();
+setInterval(render, 30000);
+</script>
+</body>
+</html>
