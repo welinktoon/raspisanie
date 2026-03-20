@@ -193,7 +193,7 @@ canvas {
 </div>
 
 <script>
-const STORAGE_KEY = 'snake_leaderboard';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzPfAYsmjlI1Gy1jb8H-c1u1QZMMBz5gDgwhxXJZEMJpNCo3p671Xl8imKHqPXv8-xa/exec';
 const CELL = 20;
 const COLS = 15;
 const ROWS = 20;
@@ -338,35 +338,29 @@ document.getElementById('player-name').addEventListener('keydown', e => {
 
 function saveResult() {
   const name = document.getElementById('player-name').value.trim() || 'Аноним';
-  const lb = getLeaderboard();
-  lb.push({ name, score, date: new Date().toLocaleDateString('ru-RU') });
-  lb.sort((a, b) => b.score - a.score);
-  if (lb.length > 50) lb.length = 50;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lb));
   document.getElementById('gameover-overlay').classList.remove('show');
   document.getElementById('player-name').value = '';
-  renderLeaderboard();
-}
-
-function getLeaderboard() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ name, score }),
+  }).then(() => renderLeaderboard()).catch(() => renderLeaderboard());
 }
 
 function renderLeaderboard() {
-  const lb = getLeaderboard();
   const el = document.getElementById('lb-body');
-  if (lb.length === 0) {
-    el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>';
-    return;
-  }
-  const top = lb.slice(0, 15);
-  let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
-  top.forEach((r, i) => {
-    html += `<tr><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
-  });
-  html += '</table>';
-  el.innerHTML = html;
+  el.innerHTML = '<div class="lb-empty">Загрузка...</div>';
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(lb => {
+      if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
+      let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
+      lb.forEach((r, i) => {
+        html += `<tr><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+      });
+      html += '</table>';
+      el.innerHTML = html;
+    })
+    .catch(() => { el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; });
 }
 
 function esc(s) {
