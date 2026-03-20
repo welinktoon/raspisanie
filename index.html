@@ -93,6 +93,67 @@
     font-size: 0.9rem;
     color: #8899aa;
   }
+  #status {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    background: #16213e;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  #status:empty { display: none; }
+  .status-current { margin-bottom: 12px; }
+  .status-label {
+    font-size: 0.78rem;
+    color: #8899aa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .status-pair {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .status-pair .room {
+    font-weight: 400;
+    color: #6dbfb8;
+    font-size: 0.9rem;
+    margin-left: 6px;
+  }
+  .status-elapsed {
+    font-size: 0.82rem;
+    color: #8899aa;
+    margin-top: 2px;
+  }
+  .progress-wrap {
+    background: #0f3460;
+    border-radius: 6px;
+    height: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+    transition: width 1s linear;
+  }
+  .status-next {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #1a1a3e;
+  }
+  .status-next-text {
+    font-size: 0.9rem;
+    color: #c0c0c0;
+  }
+  .status-next-text strong { color: #fff; }
+  .status-next-text .time-left { color: #f5d76e; font-weight: 600; }
+  .status-free {
+    text-align: center;
+    color: #7dcea0;
+    font-size: 0.95rem;
+  }
   @media (max-width: 768px) {
     .week {
       grid-template-columns: 1fr;
@@ -115,6 +176,7 @@
 
 <h1>Расписание занятий</h1>
 <div id="clock"></div>
+<div id="status"></div>
 
 <div class="week" id="week"></div>
 
@@ -174,12 +236,108 @@ function getRange(timeStr) {
   return { start: parseTime(parts[0].trim()), end: parseTime(parts[1].trim()) };
 }
 
+function plural(n, one, few, many) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b > 1 && b < 5) return few;
+  if (b === 1) return one;
+  return many;
+}
+
+function fmtMin(m) {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  let s = '';
+  if (h > 0) s += h + ' ' + plural(h, 'час', 'часа', 'часов');
+  if (mm > 0) s += (s ? ' ' : '') + mm + ' ' + plural(mm, 'минуту', 'минуты', 'минут');
+  return s || '< 1 минуты';
+}
+
+function renderStatus(todayData, nowMin) {
+  const el = document.getElementById('status');
+  if (!todayData) { el.innerHTML = ''; return; }
+
+  const lessons = todayData.lessons;
+  let current = null, next = null;
+
+  for (let i = 0; i < lessons.length; i++) {
+    const r = getRange(lessons[i].time);
+    if (nowMin >= r.start && nowMin < r.end) {
+      current = { ...lessons[i], ...r, idx: i };
+    }
+    if (!next && nowMin < r.start) {
+      next = { ...lessons[i], ...r, idx: i };
+    }
+  }
+
+  // after all lessons
+  const lastRange = getRange(lessons[lessons.length - 1].time);
+  if (!current && nowMin >= lastRange.end) {
+    el.innerHTML = '<div class="status-free">Пары на сегодня закончились</div>';
+    return;
+  }
+
+  // before first lesson
+  const firstRange = getRange(lessons[0].time);
+  if (!current && nowMin < firstRange.start) {
+    const left = firstRange.start - nowMin;
+    el.innerHTML = `
+      <div class="status-label">Первая пара через</div>
+      <div class="status-next-text"><strong>${lessons[0].name}</strong> <span class="time-left">через ${fmtMin(left)}</span></div>
+      <div class="status-elapsed">${lessons[0].time} / ${lessons[0].room}</div>
+    `;
+    return;
+  }
+
+  let html = '';
+  if (current) {
+    const elapsed = nowMin - current.start;
+    const total = current.end - current.start;
+    const pct = Math.min(100, Math.round(elapsed / total * 100));
+    const remaining = total - elapsed;
+    html += `
+      <div class="status-current">
+        <div class="status-label">Сейчас идет</div>
+        <div class="status-pair">${current.name}<span class="room">${current.room}</span></div>
+        <div class="status-elapsed">Прошло ${fmtMin(elapsed)} / осталось ${fmtMin(remaining)}</div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>
+    `;
+    // find next after current
+    if (!next) {
+      for (let i = current.idx + 1; i < lessons.length; i++) {
+        const r = getRange(lessons[i].time);
+        if (nowMin < r.start) { next = { ...lessons[i], ...r }; break; }
+      }
+    }
+  }
+
+  if (next) {
+    const left = next.start - nowMin;
+    html += `
+      <div class="status-next">
+        <div class="status-label">Следующая</div>
+        <div class="status-next-text"><strong>${next.name}</strong> <span class="time-left">через ${fmtMin(left)}</span></div>
+        <div class="status-elapsed">${next.time} / ${next.room}</div>
+      </div>
+    `;
+  } else if (current) {
+    html += `<div class="status-next"><div class="status-free">Последняя пара на сегодня</div></div>`;
+  }
+
+  el.innerHTML = html;
+}
+
 function render() {
   const now = new Date();
   const todayIdx = now.getDay(); // 0=Sun
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const weekEl = document.getElementById('week');
   weekEl.innerHTML = '';
+
+  const todayData = schedule.find(d => d.idx === todayIdx) || null;
+  renderStatus(todayData, nowMin);
 
   schedule.forEach(d => {
     const isToday = d.idx === todayIdx;
@@ -210,7 +368,7 @@ function render() {
 }
 
 render();
-setInterval(render, 30000);
+setInterval(render, 10000);
 </script>
 </body>
 </html>
