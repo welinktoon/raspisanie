@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Змейка</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+a { color: #4fc3f7; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back { font-size: 0.9rem; margin-bottom: 8px; align-self: flex-start; }
+h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
+#score-display { font-size: 1rem; color: #f5d76e; margin-bottom: 8px; font-weight: 700; }
+canvas {
+  border: 2px solid #4fc3f7;
+  border-radius: 8px;
+  background: #0f3460;
+  display: block;
+  max-width: 100%;
+}
+.controls {
+  display: grid;
+  grid-template-areas:
+    ". up ."
+    "left down right";
+  grid-template-columns: 70px 70px 70px;
+  grid-template-rows: 70px 70px;
+  gap: 6px;
+  margin-top: 12px;
+}
+.ctrl-btn {
+  width: 70px;
+  height: 70px;
+  border: 2px solid #4fc3f7;
+  border-radius: 14px;
+  background: #16213e;
+  color: #4fc3f7;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+.ctrl-btn:active { background: #4fc3f7; color: #1a1a2e; }
+.ctrl-up { grid-area: up; }
+.ctrl-down { grid-area: down; }
+.ctrl-left { grid-area: left; }
+.ctrl-right { grid-area: right; }
+
+#start-btn {
+  margin-top: 16px;
+  padding: 14px 40px;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+#start-btn:hover { background: #29b6f6; }
+
+/* Модал GameOver */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.overlay.show { display: flex; }
+.modal {
+  background: #16213e;
+  border: 2px solid #4fc3f7;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+}
+.modal h2 { color: #f5d76e; margin-bottom: 6px; font-size: 1.3rem; }
+.modal .final-score { font-size: 2rem; color: #fff; font-weight: 700; margin-bottom: 16px; }
+.modal input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #4fc3f7;
+  border-radius: 8px;
+  background: #0f3460;
+  color: #fff;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 12px;
+  outline: none;
+}
+.modal input::placeholder { color: #556; }
+.modal button {
+  width: 100%;
+  padding: 12px;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal button:hover { background: #29b6f6; }
+
+/* Таблица лидеров */
+.leaderboard {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 340px;
+}
+.leaderboard h3 {
+  text-align: center;
+  color: #f5d76e;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lb-table th {
+  background: #0f3460;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #8899aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.lb-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1a1a3e;
+  font-size: 0.95rem;
+}
+.lb-table tr:nth-child(1) td { color: #f5d76e; font-weight: 700; }
+.lb-table tr:nth-child(2) td { color: #c0c0c0; }
+.lb-table tr:nth-child(3) td { color: #cd7f32; }
+.lb-table .rank { text-align: center; width: 36px; }
+.lb-table .name { }
+.lb-table .pts { text-align: right; font-weight: 700; color: #4fc3f7; }
+.lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="back"><a href="index.html">&larr; Расписание</a></div>
+<h1>Змейка</h1>
+<div id="score-display">Очки: 0</div>
+
+<canvas id="game"></canvas>
+
+<button id="start-btn">Играть</button>
+
+<div class="controls" id="controls" style="display:none;">
+  <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
+  <div class="ctrl-btn ctrl-left" data-dir="left">&#9664;</div>
+  <div class="ctrl-btn ctrl-down" data-dir="down">&#9660;</div>
+  <div class="ctrl-btn ctrl-right" data-dir="right">&#9654;</div>
+</div>
+
+<div class="overlay" id="gameover-overlay">
+  <div class="modal">
+    <h2>Игра окончена!</h2>
+    <div class="final-score" id="final-score">0</div>
+    <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
+    <button id="save-btn">Сохранить результат</button>
+  </div>
+</div>
+
+<div class="leaderboard">
+  <h3>Таблица лидеров</h3>
+  <div id="lb-body"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'snake_leaderboard';
+const CELL = 20;
+const COLS = 15;
+const ROWS = 20;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+canvas.width = COLS * CELL;
+canvas.height = ROWS * CELL;
+
+let snake, dir, nextDir, food, score, gameInterval, running;
+
+function init() {
+  const midX = Math.floor(COLS / 2);
+  const midY = Math.floor(ROWS / 2);
+  snake = [
+    { x: midX, y: midY },
+    { x: midX - 1, y: midY },
+    { x: midX - 2, y: midY }
+  ];
+  dir = 'right';
+  nextDir = 'right';
+  score = 0;
+  updateScore();
+  placeFood();
+  draw();
+}
+
+function placeFood() {
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+  food = pos;
+}
+
+function draw() {
+  // Фон
+  ctx.fillStyle = '#0f3460';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Сетка (тонкая)
+  ctx.strokeStyle = 'rgba(79,195,247,0.07)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= COLS; x++) {
+    ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, ROWS * CELL); ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(COLS * CELL, y * CELL); ctx.stroke();
+  }
+
+  // Еда
+  ctx.fillStyle = '#f5d76e';
+  ctx.beginPath();
+  ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Змейка
+  snake.forEach((seg, i) => {
+    const r = CELL / 2 - 1;
+    ctx.fillStyle = i === 0 ? '#4fc3f7' : '#7dcea0';
+    ctx.beginPath();
+    ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
+    ctx.fill();
+  });
+}
+
+function updateScore() {
+  document.getElementById('score-display').textContent = 'Очки: ' + score;
+}
+
+function step() {
+  dir = nextDir;
+  const head = { ...snake[0] };
+
+  if (dir === 'up') head.y--;
+  else if (dir === 'down') head.y++;
+  else if (dir === 'left') head.x--;
+  else if (dir === 'right') head.x++;
+
+  // Стены
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) return gameOver();
+
+  // Столкновение с собой
+  if (snake.some(s => s.x === head.x && s.y === head.y)) return gameOver();
+
+  snake.unshift(head);
+
+  if (head.x === food.x && head.y === food.y) {
+    score += 10;
+    updateScore();
+    placeFood();
+  } else {
+    snake.pop();
+  }
+
+  draw();
+}
+
+function gameOver() {
+  running = false;
+  clearInterval(gameInterval);
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('gameover-overlay').classList.add('show');
+  document.getElementById('player-name').focus();
+  document.getElementById('start-btn').style.display = 'block';
+  document.getElementById('controls').style.display = 'none';
+}
+
+function setDir(d) {
+  if (!running) return;
+  const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  if (d !== opposite[dir]) nextDir = d;
+}
+
+// Кнопки управления
+document.querySelectorAll('.ctrl-btn').forEach(btn => {
+  btn.addEventListener('touchstart', e => { e.preventDefault(); setDir(btn.dataset.dir); });
+  btn.addEventListener('mousedown', e => { e.preventDefault(); setDir(btn.dataset.dir); });
+});
+
+// Клавиатура
+document.addEventListener('keydown', e => {
+  const map = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+                w: 'up', s: 'down', a: 'left', d: 'right' };
+  if (map[e.key]) { e.preventDefault(); setDir(map[e.key]); }
+});
+
+// Старт
+document.getElementById('start-btn').addEventListener('click', () => {
+  init();
+  running = true;
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('controls').style.display = 'grid';
+  clearInterval(gameInterval);
+  gameInterval = setInterval(step, 150);
+});
+
+// Сохранение результата
+document.getElementById('save-btn').addEventListener('click', saveResult);
+document.getElementById('player-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveResult();
+});
+
+function saveResult() {
+  const name = document.getElementById('player-name').value.trim() || 'Аноним';
+  const lb = getLeaderboard();
+  lb.push({ name, score, date: new Date().toLocaleDateString('ru-RU') });
+  lb.sort((a, b) => b.score - a.score);
+  if (lb.length > 50) lb.length = 50;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lb));
+  document.getElementById('gameover-overlay').classList.remove('show');
+  document.getElementById('player-name').value = '';
+  renderLeaderboard();
+}
+
+function getLeaderboard() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function renderLeaderboard() {
+  const lb = getLeaderboard();
+  const el = document.getElementById('lb-body');
+  if (lb.length === 0) {
+    el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>';
+    return;
+  }
+  const top = lb.slice(0, 15);
+  let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
+  top.forEach((r, i) => {
+    html += `<tr><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+  });
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Инициализация
+init();
+renderLeaderboard();
+</script>
+</body>
+</html>
