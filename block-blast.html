@@ -116,11 +116,15 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 #start-btn:hover { background: #29b6f6; }
-#quit-btn {
+#quit-row {
   display: none;
-  position: absolute;
-  top: 8px; right: 8px;
-  z-index: 10;
+  width: 100%;
+  max-width: 400px;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+body.playing #quit-row { display: flex; }
+#quit-btn {
   background: rgba(0,0,0,0.55);
   color: #ff6b6b;
   border: 1px solid rgba(255,107,107,0.4);
@@ -130,7 +134,7 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   cursor: pointer;
 }
 #quit-btn:hover { background: rgba(255,80,80,0.2); }
-body.playing #quit-btn { display: block; }
+@media (min-width: 800px) { #quit-row { max-width: 600px; } }
 
 .overlay {
   display: none;
@@ -183,6 +187,10 @@ body.playing #quit-btn { display: block; }
   margin-top: 24px;
   width: 100%;
   max-width: 340px;
+  min-height: 470px;
+  background: #0d1525;
+  border-radius: 10px;
+  padding: 12px;
 }
 .leaderboard h3 {
   text-align: center;
@@ -292,7 +300,7 @@ body.playing #quit-btn { display: block; }
 }
 
 /* ── Игровой режим: скрыть лишнее и заблокировать скролл ── */
-body.playing .back { display: none; }
+@media (max-width: 799px) { body.playing .back { display: none; } }
 body.playing .leaderboard { display: none; }
 body.playing #start-btn { display: none !important; }
 body.playing {
@@ -402,10 +410,10 @@ body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
 
 <div class="game-layout">
   <div class="game-col">
+    <div id="quit-row"><button id="quit-btn" onclick="quit()">✕ Завершить</button></div>
     <div id="board-wrapper">
       <div id="board"></div>
       <button id="start-btn">Играть</button>
-      <button id="quit-btn" onclick="quit()">✕ Завершить</button>
     </div>
     <div id="pieces-area"></div>
   </div>
@@ -421,9 +429,8 @@ body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
   <div class="modal">
     <h2>Игра окончена!</h2>
     <div class="final-score" id="final-score">0</div>
-    <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
+    <input type="text" id="player-name" placeholder="Ваше имя (Enter)" maxlength="20" autocomplete="off">
     <div class="name-error" id="name-error"></div>
-    <button id="save-btn">Сохранить результат</button>
   </div>
 </div>
 
@@ -507,7 +514,7 @@ function init() {
   document.body.classList.add('playing');
   document.getElementById('gameover-overlay').classList.remove('show');
   document.getElementById('player-name').style.display = '';
-  document.getElementById('save-btn').style.display = '';
+  document.getElementById('player-name').value = '';
   updateScore();
   renderBoard();
   pieces = generateThreePieces();
@@ -731,15 +738,19 @@ function gameOver() {
   if (isQuitting) {
     isQuitting = false;
     document.getElementById('player-name').style.display = 'none';
-    document.getElementById('save-btn').style.display = 'none';
   } else {
     document.getElementById('player-name').focus();
   }
   if (gameOverTimer) clearTimeout(gameOverTimer);
   gameOverTimer = setTimeout(() => {
-    document.getElementById('gameover-overlay').classList.remove('show');
     gameOverTimer = null;
-  }, 3000);
+    const input = document.getElementById('player-name');
+    const name = input.value.trim() || 'Аноним';
+    input.value = '';
+    document.getElementById('gameover-overlay').classList.remove('show');
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score }) })
+      .then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+  }, 2000);
 }
 
 // --- Drag & Drop ---
@@ -894,7 +905,6 @@ function clearPreview() {
 document.getElementById('start-btn').addEventListener('click', init);
 
 // Leaderboard
-document.getElementById('save-btn').addEventListener('click', saveResult);
 document.getElementById('player-name').addEventListener('keydown', e => {
   if (e.key === 'Enter') saveResult();
 });
@@ -930,12 +940,10 @@ function saveResult() {
 
   errorEl.classList.remove('show');
   if (gameOverTimer) { clearTimeout(gameOverTimer); gameOverTimer = null; }
-  document.getElementById('gameover-overlay').classList.remove('show');
   input.value = '';
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ name, score }),
-  }).then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+  document.getElementById('gameover-overlay').classList.remove('show');
+  fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score }) })
+    .then(() => renderLeaderboard()).catch(() => renderLeaderboard());
 }
 
 function renderLeaderboard() {
