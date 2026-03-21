@@ -372,6 +372,11 @@ canvas {
   margin-top: 1px;
 }
 
+/* lb-col на мобиле — прозрачный контейнер */
+.lb-col { display: contents; }
+.rules-desktop { display: none; }
+.rules-mobile { display: block; }
+
 /* Десктоп */
 @media (min-width: 768px) {
   body { padding: 20px 40px; }
@@ -400,6 +405,18 @@ canvas {
   }
   .skins-toggle { font-size: 0.95rem; padding: 9px 24px; }
   .skins-panel { max-width: 400px; }
+  .lb-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .rules-desktop { display: block; }
+  .rules-mobile { display: none; }
+  .rules {
+    max-width: none;
+    margin-top: 0;
+  }
   .leaderboard {
     max-width: 380px;
     min-width: 320px;
@@ -458,9 +475,20 @@ canvas {
     <div class="kb-hint">WASD / стрелки для управления</div>
   </div>
 
-  <div class="leaderboard">
-    <h3>Таблица лидеров</h3>
-    <div id="lb-body"></div>
+  <div class="lb-col">
+    <div class="leaderboard">
+      <h3>Таблица лидеров</h3>
+      <div id="lb-body"></div>
+    </div>
+    <div class="rules rules-desktop">
+      <h3>Правила</h3>
+      <ul>
+        <li><span class="r-dot" style="background:#f5d76e;box-shadow:0 0 6px #f5d76e"></span> <b>Обычная еда</b> — +10 очков</li>
+        <li><span class="r-dot" style="background:#ff3cff;box-shadow:0 0 6px #ff3cff"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+        <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
+        <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -865,7 +893,7 @@ init();
 renderLeaderboard();
 </script>
 
-<div class="rules">
+<div class="rules rules-mobile">
   <h3>Правила</h3>
   <ul>
     <li><span class="r-dot" style="background:#f5d76e;box-shadow:0 0 6px #f5d76e"></span> <b>Обычная еда</b> — +10 очков</li>
