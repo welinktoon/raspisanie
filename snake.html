@@ -324,6 +324,54 @@ canvas {
   80% { transform: translateX(5px); }
 }
 
+/* Правила */
+.rules {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(145deg, rgba(22,33,62,0.5), rgba(15,52,96,0.3));
+  border: 1px solid rgba(79,195,247,0.15);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.rules h3 {
+  text-align: center;
+  color: #f5d76e;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  text-shadow: 0 0 10px rgba(245,215,110,0.2);
+  letter-spacing: 1px;
+}
+.rules ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rules li {
+  font-size: 0.85rem;
+  color: #b0bec5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.4;
+}
+.rules li b { color: #e0e0e0; }
+.r-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.r-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
 /* Десктоп */
 @media (min-width: 768px) {
   body { padding: 20px 40px; }
@@ -509,7 +557,7 @@ function placeBonus() {
   );
   bonusFood = pos;
   bonusFoodSpawnTime = Date.now();
-  bonusTimeout = setTimeout(() => { bonusFood = null; bonusTimeout = null; }, 5000);
+  bonusTimeout = setTimeout(() => { bonusFood = null; bonusTimeout = null; }, 8000);
 }
 
 function placeDark() {
@@ -524,11 +572,11 @@ function placeDark() {
   );
   darkFood = pos;
   darkFoodSpawnTime = Date.now();
-  darkTimeout = setTimeout(() => { darkFood = null; darkTimeout = null; }, 4000);
+  darkTimeout = setTimeout(() => { darkFood = null; darkTimeout = null; }, 10000);
 }
 
 function checkSpeedAndSpecials() {
-  if (score >= 500 && currentSpeed === 230) {
+  if (score >= 700 && currentSpeed === 230) {
     currentSpeed = 200;
     clearInterval(gameInterval);
     gameInterval = setInterval(step, 200);
@@ -565,7 +613,7 @@ function draw() {
   // Бонусная еда
   if (bonusFood) {
     const bonusElapsed = Date.now() - bonusFoodSpawnTime;
-    const bonusBlinking = bonusElapsed > 2000;
+    const bonusBlinking = bonusElapsed > 4000;
     const bonusVisible = !bonusBlinking || Math.floor(Date.now() / 200) % 2 === 0;
     if (bonusVisible) {
       ctx.shadowColor = '#ff3cff';
@@ -816,5 +864,15 @@ renderSkins();
 init();
 renderLeaderboard();
 </script>
+
+<div class="rules">
+  <h3>Правила</h3>
+  <ul>
+    <li><span class="r-dot" style="background:#f5d76e;box-shadow:0 0 6px #f5d76e"></span> <b>Обычная еда</b> — +10 очков</li>
+    <li><span class="r-dot" style="background:#ff3cff;box-shadow:0 0 6px #ff3cff"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+    <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
+    <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
+  </ul>
+</div>
 </body>
 </html>
