@@ -730,24 +730,28 @@ document.querySelectorAll('.ctrl-btn').forEach(btn => {
 
 // Свайп по всему экрану
 let touchStartX = 0, touchStartY = 0;
+const SWIPE_THRESHOLD = 20;
+
 document.addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
 }, { passive: false });
+
 document.addEventListener('touchmove', e => {
-  if (running) e.preventDefault(); // блокирует pull-to-refresh и скролл во время игры
-}, { passive: false });
-document.addEventListener('touchend', e => {
+  if (running) e.preventDefault();
   if (!running) return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
   if (Math.abs(dx) > Math.abs(dy)) {
     setDir(dx > 0 ? 'right' : 'left');
   } else {
     setDir(dy > 0 ? 'down' : 'up');
   }
-}, { passive: true });
+  // сбрасываем точку — следующий свайп в этом же касании тоже сработает
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: false });
 
 // Клавиатура
 document.addEventListener('keydown', e => {
