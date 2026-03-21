@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Змейка</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:         #0d1117;
+  --surface:    #161b26;
+  --surface-2:  #1e2636;
+  --border:     #252f3e;
+  --accent:     #4fc3f7;
+  --text:       #dde3ec;
+  --text-muted: #5a6a82;
+  --gold:       #f0c040;
+  --silver:     #8fa3ba;
+  --bronze:     #b07840;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back {
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+  align-self: flex-start;
+  color: var(--text-muted);
+}
+
+h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+#score-display {
+  font-size: 0.95rem;
+  color: var(--gold);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+canvas {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0f1923;
+  display: block;
+}
+
+/* Pre-game buttons row */
+.pre-game-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* Controls */
+.controls {
+  display: grid;
+  grid-template-areas: ". up ." "left down right";
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.ctrl-btn {
+  height: 60px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.08s, color 0.08s;
+  user-select: none;
+}
+
+.ctrl-btn:active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+
+.ctrl-up { grid-area: up; }
+.ctrl-down { grid-area: down; }
+.ctrl-left { grid-area: left; }
+.ctrl-right { grid-area: right; }
+
+/* Start button */
+#start-btn {
+  padding: 11px 36px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+#start-btn:hover { opacity: 0.82; }
+
+/* Overlay / Modal */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.overlay.show { display: flex; }
+.overlay.show .modal { animation: modal-in 0.22s ease-out; }
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+}
+
+.modal h2 {
+  color: var(--gold);
+  margin-bottom: 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.modal .final-score {
+  font-size: 3rem;
+  color: var(--text);
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.modal input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.modal input:focus { border-color: var(--accent); }
+.modal input::placeholder { color: var(--text-muted); }
+
+.modal button {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.modal button:hover { opacity: 0.82; }
+
+.modal .name-error {
+  color: #f87171;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
+  display: none;
+}
+.modal .name-error.show { display: block; animation: shake 0.35s ease; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Shared card */
+.leaderboard, .rules {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.leaderboard h3, .rules h3 {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+/* Leaderboard */
+.leaderboard {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 360px;
+}
+
+#lb-body {
+  min-height: 365px;
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lb-table th {
+  padding: 6px 10px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.lb-table th.rank, .lb-table .rank { text-align: center; width: 36px; }
+.lb-table th.pts { text-align: right; }
+
+.lb-table td {
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text);
+}
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table .pts { text-align: right; font-weight: 600; color: var(--accent); }
+
+.lb-table tr.top-1 td { color: var(--gold); font-weight: 700; }
+.lb-table tr.top-1 .pts { color: var(--gold); }
+.lb-table tr.top-2 td { color: var(--silver); font-weight: 600; }
+.lb-table tr.top-2 .pts { color: var(--silver); }
+.lb-table tr.top-3 td { color: var(--bronze); font-weight: 600; }
+.lb-table tr.top-3 .pts { color: var(--bronze); }
+
+.lb-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 16px;
+  font-size: 0.85rem;
+}
+
+/* Skins */
+.skins-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.skins-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+.skins-panel { display: none; margin-top: 10px; width: 100%; max-width: 320px; }
+.skins-panel.open { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 66px;
+}
+.skin-card:hover { border-color: var(--accent); }
+.skin-card.active { border-color: var(--accent); background: var(--surface-2); }
+
+.skin-preview { display: flex; gap: 2px; }
+.skin-preview span { width: 12px; height: 12px; border-radius: 2px; display: block; }
+.skin-label { font-size: 0.62rem; color: var(--text-muted); text-align: center; }
+
+/* Rules */
+.rules {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.rules ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+.rules li {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.5;
+}
+.rules li b { color: var(--text); }
+
+.r-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.r-icon { font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+
+/* Mobile: lb-col transparent */
+.lb-col { display: contents; }
+.rules-desktop { display: none; }
+.rules-mobile { display: block; }
+
+/* Desktop */
+@media (min-width: 768px) {
+  body { padding: 24px 48px; }
+
+  .game-wrapper {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 980px;
+    margin-top: 16px;
+  }
+
+  .game-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 { font-size: 1.6rem; margin-bottom: 6px; }
+  #score-display { font-size: 1.05rem; margin-bottom: 14px; }
+  canvas { max-width: none; }
+  .controls { display: none !important; }
+
+  .pre-game-btns { margin-top: 14px; }
+  #start-btn { padding: 12px 44px; font-size: 1rem; }
+
+  .skins-toggle { font-size: 0.85rem; }
+  .skins-panel { max-width: 380px; }
+
+  .lb-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+    min-width: 280px;
+    max-width: 340px;
+  }
+
+  .rules-desktop { display: block; }
+  .rules-mobile { display: none; }
+
+  .leaderboard, .rules {
+    max-width: none;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .lb-table td { font-size: 0.9rem; padding: 9px 10px; }
+  .lb-table th { font-size: 0.68rem; padding: 7px 10px; }
+
+  .modal { max-width: 360px; padding: 32px 28px; }
+  .modal h2 { font-size: 1.25rem; }
+  .modal .final-score { font-size: 3.2rem; }
+  .modal input { padding: 13px; }
+  .modal button { padding: 13px; }
+
+  .kb-hint {
+    display: block;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .game-wrapper { display: contents; }
+  .game-col { display: contents; }
+  .kb-hint { display: none; }
+  .swipe-hint { display: none; }
+}
+</style>
+<script src="badwords.js"></script>
+</head>
+<body>
+
+<div class="back"><a href="index.html">&larr; Расписание</a></div>
+<h1>Змейка</h1>
+<div id="score-display">Очки: 0</div>
+
+<div class="game-wrapper">
+  <div class="game-col">
+    <canvas id="game"></canvas>
+
+    <div class="pre-game-btns" id="pre-game-btns">
+      <button id="start-btn">Играть</button>
+      <button class="skins-toggle" id="skins-toggle">Расцветка</button>
+    </div>
+    <div class="skins-panel" id="skins-panel"></div>
+
+    <div class="controls" id="controls" style="display:none;">
+      <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
+      <div class="ctrl-btn ctrl-left" data-dir="left">&#9664;</div>
+      <div class="ctrl-btn ctrl-down" data-dir="down">&#9660;</div>
+      <div class="ctrl-btn ctrl-right" data-dir="right">&#9654;</div>
+    </div>
+
+    <div class="kb-hint">WASD / стрелки для управления</div>
+  </div>
+
+  <div class="lb-col">
+    <div class="leaderboard">
+      <h3>Таблица лидеров</h3>
+      <div id="lb-body"></div>
+    </div>
+    <div class="rules rules-desktop">
+      <h3>Правила</h3>
+      <ul>
+        <li><span class="r-dot" style="background:#f0c040"></span> <b>Обычная еда</b> — +10 очков</li>
+        <li><span class="r-dot" style="background:#d946ef"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+        <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
+        <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="gameover-overlay">
+  <div class="modal">
+    <h2>Игра окончена!</h2>
+    <div class="final-score" id="final-score">0</div>
+    <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
+    <div class="name-error" id="name-error"></div>
+    <button id="save-btn">Сохранить результат</button>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzPfAYsmjlI1Gy1jb8H-c1u1QZMMBz5gDgwhxXJZEMJpNCo3p671Xl8imKHqPXv8-xa/exec';
+
+const SKINS = {
+  classic: {
+    name: 'Классика',
+    head: '#4fc3f7',
+    body: ['#7dcea0']
+  },
+  rainbow: {
+    name: 'Радуга',
+    head: '#ff0000',
+    body: ['#ff0000','#ff8c00','#ffd700','#32cd32','#00bfff','#4169e1','#9b59b6']
+  },
+  armenia: {
+    name: 'Армения',
+    head: '#d90012',
+    body: ['#d90012','#0033a0','#f2a800']
+  },
+  russia: {
+    name: 'Россия',
+    head: '#ffffff',
+    body: ['#ffffff','#0039a6','#d52b1e']
+  }
+};
+let currentSkin = 'classic';
+
+const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+const COLS = 15;
+const ROWS = 20;
+const CELL = isDesktop ? 28 : Math.floor((window.innerWidth - 16) / COLS);
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+canvas.width = COLS * CELL;
+canvas.height = ROWS * CELL;
+
+let snake, dir, dirQueue, food, score, gameInterval, running;
+let bonusFood = null, eatenCount = 0, bonusTimeout = null, bonusFoodSpawnTime = 0;
+let darkFood = null, darkTimeout = null, darkFoodSpawnTime = 0;
+let currentSpeed = 230;
+
+function init() {
+  const midX = Math.floor(COLS / 2);
+  const midY = Math.floor(ROWS / 2);
+  snake = [
+    { x: midX, y: midY },
+    { x: midX - 1, y: midY },
+    { x: midX - 2, y: midY }
+  ];
+  dir = 'right';
+  dirQueue = [];
+  score = 0;
+  eatenCount = 0;
+  currentSpeed = 230;
+  bonusFood = null; bonusFoodSpawnTime = 0;
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  darkFood = null; darkFoodSpawnTime = 0;
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+  updateScore();
+  placeFood();
+  draw();
+}
+
+function placeFood() {
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+  food = pos;
+}
+
+function placeBonus() {
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (
+    snake.some(s => s.x === pos.x && s.y === pos.y) ||
+    (food.x === pos.x && food.y === pos.y) ||
+    (darkFood && darkFood.x === pos.x && darkFood.y === pos.y)
+  );
+  bonusFood = pos;
+  bonusFoodSpawnTime = Date.now();
+  bonusTimeout = setTimeout(() => { bonusFood = null; bonusTimeout = null; }, 8000);
+}
+
+function placeDark() {
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (
+    snake.some(s => s.x === pos.x && s.y === pos.y) ||
+    (food.x === pos.x && food.y === pos.y) ||
+    (bonusFood && bonusFood.x === pos.x && bonusFood.y === pos.y)
+  );
+  darkFood = pos;
+  darkFoodSpawnTime = Date.now();
+  darkTimeout = setTimeout(() => { darkFood = null; darkTimeout = null; }, 10000);
+}
+
+function checkSpeedAndSpecials() {
+  if (score >= 700 && currentSpeed === 230) {
+    currentSpeed = 200;
+    clearInterval(gameInterval);
+    gameInterval = setInterval(step, 200);
+  }
+  if (score >= 600 && score <= 700 && score % 20 === 0 && !darkFood) {
+    placeDark();
+  }
+}
+
+function draw() {
+  // Фон
+  ctx.fillStyle = '#0f1923';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Сетка
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= COLS; x++) {
+    ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, ROWS * CELL); ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(COLS * CELL, y * CELL); ctx.stroke();
+  }
+
+  // Еда
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#f0c040';
+  ctx.beginPath();
+  ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Бонусная еда
+  if (bonusFood) {
+    const bonusElapsed = Date.now() - bonusFoodSpawnTime;
+    const bonusBlinking = bonusElapsed > 4000;
+    const bonusVisible = !bonusBlinking || Math.floor(Date.now() / 200) % 2 === 0;
+    if (bonusVisible) {
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#d946ef';
+      ctx.beginPath();
+      ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Тёмная еда (сокращает хвост)
+  if (darkFood) {
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#1a1a2a';
+    ctx.beginPath();
+    ctx.arc(darkFood.x * CELL + CELL / 2, darkFood.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Змейка
+  const skin = SKINS[currentSkin];
+  ctx.shadowBlur = 0;
+  snake.forEach((seg, i) => {
+    ctx.fillStyle = i === 0 ? skin.head : skin.body[(i - 1) % skin.body.length];
+    ctx.beginPath();
+    ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
+    ctx.fill();
+  });
+}
+
+function updateScore() {
+  document.getElementById('score-display').textContent = 'Очки: ' + score;
+}
+
+function step() {
+  if (dirQueue.length > 0) dir = dirQueue.shift();
+  const head = { ...snake[0] };
+
+  if (dir === 'up') head.y--;
+  else if (dir === 'down') head.y++;
+  else if (dir === 'left') head.x--;
+  else if (dir === 'right') head.x++;
+
+  // Стены
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) return gameOver();
+
+  // Столкновение с собой
+  if (snake.some(s => s.x === head.x && s.y === head.y)) return gameOver();
+
+  snake.unshift(head);
+
+  if (head.x === food.x && head.y === food.y) {
+    score += 10;
+    eatenCount++;
+    updateScore();
+    placeFood();
+    if (eatenCount % 5 === 0) placeBonus();
+    checkSpeedAndSpecials();
+  } else if (bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
+    score += 30;
+    updateScore();
+    bonusFood = null;
+    if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+    checkSpeedAndSpecials();
+  } else if (darkFood && head.x === darkFood.x && head.y === darkFood.y) {
+    darkFood = null;
+    if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+    // Хвост -5 (snake уже с добавленной головой, убираем 6 чтобы получить -5)
+    for (let i = 0; i < 6; i++) {
+      if (snake.length > 1) snake.pop();
+    }
+  } else {
+    snake.pop();
+  }
+
+  draw();
+}
+
+function gameOver() {
+  running = false;
+  clearInterval(gameInterval);
+  bonusFood = null;
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  darkFood = null;
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('gameover-overlay').classList.add('show');
+  document.getElementById('player-name').focus();
+  document.getElementById('pre-game-btns').style.display = 'flex';
+  document.getElementById('controls').style.display = 'none';
+}
+
+function setDir(d) {
+  if (!running) return;
+  const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  const last = dirQueue.length > 0 ? dirQueue[dirQueue.length - 1] : dir;
+  if (d !== opposite[last] && d !== last && dirQueue.length < 3) dirQueue.push(d);
+}
+
+// Кнопки управления (оставляем для совместимости, на мобиле скрыты)
+document.querySelectorAll('.ctrl-btn').forEach(btn => {
+  btn.addEventListener('touchstart', e => { e.preventDefault(); setDir(btn.dataset.dir); });
+  btn.addEventListener('mousedown', e => { e.preventDefault(); setDir(btn.dataset.dir); });
+});
+
+// Блокируем скролл и pull-to-refresh во время игры
+document.addEventListener('touchmove', e => {
+  if (running) e.preventDefault();
+}, { passive: false });
+
+// Клавиатура (e.code — не зависит от раскладки и CapsLock)
+document.addEventListener('keydown', e => {
+  const keyMap  = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+  const codeMap = { KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right' };
+  const d = keyMap[e.key] || codeMap[e.code];
+  if (d) { e.preventDefault(); setDir(d); }
+});
+
+// Старт
+document.getElementById('start-btn').addEventListener('click', () => {
+  init();
+  running = true;
+  document.getElementById('pre-game-btns').style.display = 'none';
+  document.getElementById('skins-panel').classList.remove('open');
+  if (!isDesktop) document.getElementById('controls').style.display = 'grid';
+  clearInterval(gameInterval);
+  gameInterval = setInterval(step, 230);
+});
+
+// Цикл мигания бонусной еды (перерисовка независимо от шага змейки)
+function blinkLoop() {
+  if (running && bonusFood) {
+    const elapsed = Date.now() - bonusFoodSpawnTime;
+    if (elapsed > 2000) draw();
+  }
+  requestAnimationFrame(blinkLoop);
+}
+blinkLoop();
+
+// Сохранение результата
+document.getElementById('save-btn').addEventListener('click', saveResult);
+document.getElementById('player-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveResult();
+});
+
+function normalizeName(str) {
+  // Латиница -> кириллица (похожие буквы)
+  const lat2cyr = {a:'а',b:'б',c:'с',e:'е',h:'н',k:'к',m:'м',o:'о',p:'р',t:'т',x:'х',y:'у',i:'и',u:'у',d:'д',n:'н',r:'р',l:'л',w:'ш',v:'в',g:'г',z:'з',f:'ф',j:'й',q:'к'};
+  let s = str.toLowerCase();
+  // Удаляем спецсимволы, цифры, пробелы — оставляем только буквы
+  s = s.replace(/[^a-zа-яёa-zа-яё]/gi, '');
+  // Заменяем латинские на кириллицу
+  s = s.split('').map(c => lat2cyr[c] || c).join('');
+  return s;
+}
+
+function saveResult() {
+  const input = document.getElementById('player-name');
+  const errorEl = document.getElementById('name-error');
+  const name = input.value.trim() || 'Аноним';
+
+  // Проверка на мат/оскорбления
+  if (name !== 'Аноним') {
+    const normalized = normalizeName(name);
+    const lower = name.toLowerCase();
+    // Проверяем и оригинал, и нормализованную версию
+    const found = window.BADWORDS.find(w => {
+      const nw = normalizeName(w);
+      return lower.includes(w) || normalized.includes(nw);
+    });
+    if (found) {
+      errorEl.textContent = 'Сам ты "' + found + '"! Введи нормальное имя.';
+      errorEl.classList.add('show');
+      input.value = '';
+      input.focus();
+      return;
+    }
+  }
+
+  errorEl.classList.remove('show');
+  document.getElementById('gameover-overlay').classList.remove('show');
+  input.value = '';
+  const qualifies = currentLb.length < 10 || score >= currentLb[Math.min(currentLb.length, 10) - 1].score;
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ name, score }),
+  }).then(() => { if (qualifies) renderLeaderboard(); }).catch(() => {});
+}
+
+let currentLb = [];
+
+function renderLeaderboard() {
+  const el = document.getElementById('lb-body');
+  el.innerHTML = '<div class="lb-empty">Загрузка...</div>';
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(lb => {
+      currentLb = lb.slice(0, 10);
+      if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
+      const medals = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
+      let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
+      currentLb.forEach((r, i) => {
+        const cls = i < 3 ? ` class="top-${i + 1}"` : '';
+        const rank = medals[i] || (i + 1);
+        html += `<tr${cls}><td class="rank">${rank}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+      });
+      html += '</table>';
+      el.innerHTML = html;
+    })
+    .catch(() => { el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; });
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Скины
+function renderSkins() {
+  const panel = document.getElementById('skins-panel');
+  panel.innerHTML = '';
+  for (const [key, skin] of Object.entries(SKINS)) {
+    const card = document.createElement('div');
+    card.className = 'skin-card' + (key === currentSkin ? ' active' : '');
+    const preview = skin.body.slice(0, 5).map(c => `<span style="background:${c}"></span>`).join('');
+    card.innerHTML = `<div class="skin-preview">${preview}</div><div class="skin-label">${skin.name}</div>`;
+    card.addEventListener('click', () => {
+      currentSkin = key;
+      renderSkins();
+      draw();
+    });
+    panel.appendChild(card);
+  }
+}
+
+document.getElementById('skins-toggle').addEventListener('click', () => {
+  document.getElementById('skins-panel').classList.toggle('open');
+});
+
+renderSkins();
+
+// Инициализация
+init();
+renderLeaderboard();
+</script>
+
+<div class="rules rules-mobile">
+  <h3>Правила</h3>
+  <ul>
+    <li><span class="r-dot" style="background:#f0c040"></span> <b>Обычная еда</b> — +10 очков</li>
+    <li><span class="r-dot" style="background:#d946ef"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+    <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
+    <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
+  </ul>
+</div>
+</body>
+</html>
