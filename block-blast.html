@@ -800,7 +800,7 @@ function renderLeaderboard() {
       if (!lb.length) { html = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; }
       else {
         html = '<h3>Таблица лидеров</h3><table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
-        lb.forEach((r, i) => {
+        lb.slice(0, 10).forEach((r, i) => {
           const cls = i < 3 ? ` class="top-${i + 1}"` : '';
           html += `<tr${cls}><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
         });
