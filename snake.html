@@ -463,6 +463,7 @@ canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
 
 let snake, dir, nextDir, food, score, gameInterval, running;
+let bonusFood = null, eatenCount = 0, bonusTimeout = null;
 
 function init() {
   const midX = Math.floor(COLS / 2);
@@ -475,6 +476,9 @@ function init() {
   dir = 'right';
   nextDir = 'right';
   score = 0;
+  eatenCount = 0;
+  bonusFood = null;
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
   updateScore();
   placeFood();
   draw();
@@ -486,6 +490,19 @@ function placeFood() {
     pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
   } while (snake.some(s => s.x === pos.x && s.y === pos.y));
   food = pos;
+}
+
+function placeBonus() {
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (
+    snake.some(s => s.x === pos.x && s.y === pos.y) ||
+    (food.x === pos.x && food.y === pos.y)
+  );
+  bonusFood = pos;
+  bonusTimeout = setTimeout(() => { bonusFood = null; draw(); bonusTimeout = null; }, 5000);
 }
 
 function draw() {
@@ -511,6 +528,24 @@ function draw() {
   ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.shadowBlur = 0;
+
+  // Бонусная еда
+  if (bonusFood) {
+    ctx.shadowColor = '#ff3cff';
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = '#ff3cff';
+    ctx.beginPath();
+    ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 1, 0, Math.PI * 2);
+    ctx.fill();
+    // Звёздочка внутри
+    ctx.fillStyle = '#fff';
+    ctx.shadowBlur = 0;
+    ctx.font = `bold ${CELL - 6}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★', bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2 + 1);
+    ctx.shadowBlur = 0;
+  }
 
   // Змейка
   const skin = SKINS[currentSkin];
@@ -554,8 +589,15 @@ function step() {
 
   if (head.x === food.x && head.y === food.y) {
     score += 10;
+    eatenCount++;
     updateScore();
     placeFood();
+    if (eatenCount % 5 === 0) placeBonus();
+  } else if (bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
+    score += 30;
+    updateScore();
+    bonusFood = null;
+    if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
   } else {
     snake.pop();
   }
@@ -566,6 +608,8 @@ function step() {
 function gameOver() {
   running = false;
   clearInterval(gameInterval);
+  bonusFood = null;
+  if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
   document.getElementById('final-score').textContent = score;
   document.getElementById('gameover-overlay').classList.add('show');
   document.getElementById('player-name').focus();
@@ -599,7 +643,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('start-btn').style.display = 'none';
   document.getElementById('controls').style.display = 'grid';
   clearInterval(gameInterval);
-  gameInterval = setInterval(step, 170);
+  gameInterval = setInterval(step, 200);
 });
 
 // Сохранение результата
@@ -660,7 +704,7 @@ function renderLeaderboard() {
       if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
       const medals = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
       let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
-      lb.forEach((r, i) => {
+      lb.slice(0, 10).forEach((r, i) => {
         const cls = i < 3 ? ` class="top-${i + 1}"` : '';
         const rank = medals[i] || (i + 1);
         html += `<tr${cls}><td class="rank">${rank}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
