@@ -39,6 +39,7 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   touch-action: none;
 }
 #pieces-area { touch-action: none; }
+body:not(.playing) #pieces-area { display: none; }
 .cell {
   background: #16213e;
   border-radius: 3px;
@@ -748,8 +749,9 @@ function gameOver() {
     const name = input.value.trim() || 'Аноним';
     input.value = '';
     document.getElementById('gameover-overlay').classList.remove('show');
-    fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score }) })
-      .then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+    const savedScore = score;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score: savedScore }) })
+      .then(() => refreshIfTopScore(savedScore)).catch(() => {});
   }, 2000);
 }
 
@@ -942,16 +944,20 @@ function saveResult() {
   if (gameOverTimer) { clearTimeout(gameOverTimer); gameOverTimer = null; }
   input.value = '';
   document.getElementById('gameover-overlay').classList.remove('show');
-  fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score }) })
-    .then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+  const savedScore = score;
+  fetch(API_URL, { method: 'POST', body: JSON.stringify({ name, score: savedScore }) })
+    .then(() => refreshIfTopScore(savedScore)).catch(() => {});
 }
 
-function renderLeaderboard() {
+let cachedLb = [];
+
+function renderLeaderboard(forceRefresh) {
   const targets = [document.getElementById('lb-body'), document.getElementById('leaderboard-desktop')];
   targets.forEach(el => { if (el) el.innerHTML = '<div class="lb-empty">Загрузка...</div>'; });
   fetch(API_URL)
     .then(r => r.json())
     .then(lb => {
+      cachedLb = lb;
       let html;
       if (!lb.length) { html = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; }
       else {
@@ -965,6 +971,13 @@ function renderLeaderboard() {
       targets.forEach(el => { if (el) el.innerHTML = html; });
     })
     .catch(() => { targets.forEach(el => { if (el) el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; }); });
+}
+
+function refreshIfTopScore(savedScore) {
+  const top10 = cachedLb.slice(0, 10);
+  if (top10.length < 10 || savedScore >= top10[top10.length - 1].score) {
+    renderLeaderboard();
+  }
 }
 
 function esc(s) {
