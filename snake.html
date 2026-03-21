@@ -39,7 +39,7 @@ a:hover { text-decoration: underline; }
 
 .back {
   font-size: 0.82rem;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
   align-self: flex-start;
   color: var(--text-muted);
 }
@@ -48,14 +48,14 @@ h1 {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   letter-spacing: 0.5px;
 }
 
 #score-display {
   font-size: 0.95rem;
   color: var(--gold);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-weight: 600;
 }
 
@@ -70,32 +70,32 @@ canvas {
 .controls {
   display: grid;
   grid-template-areas: ". up ." "left down right";
-  grid-template-columns: 72px 72px 72px;
-  grid-template-rows: 72px 72px;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-top: 16px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 280px;
 }
 
 .ctrl-btn {
-  width: 72px;
-  height: 72px;
+  height: 68px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--text-muted);
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s, color 0.1s, transform 0.08s;
+  transition: background 0.08s, color 0.08s;
+  user-select: none;
 }
 
 .ctrl-btn:active {
   background: var(--accent);
   color: var(--bg);
-  transform: scale(0.91);
 }
 
 .ctrl-up { grid-area: up; }
@@ -105,7 +105,7 @@ canvas {
 
 /* Start button */
 #start-btn {
-  margin-top: 14px;
+  margin-top: 10px;
   padding: 11px 36px;
   background: var(--accent);
   color: var(--bg);
@@ -414,16 +414,6 @@ canvas {
   .game-wrapper { display: contents; }
   .game-col { display: contents; }
   .kb-hint { display: none; }
-  #controls { display: none !important; }
-  .swipe-hint {
-    display: block;
-    margin-top: 10px;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    text-align: center;
-  }
-}
-@media (min-width: 768px) {
   .swipe-hint { display: none; }
 }
 </style>
@@ -728,29 +718,9 @@ document.querySelectorAll('.ctrl-btn').forEach(btn => {
   btn.addEventListener('mousedown', e => { e.preventDefault(); setDir(btn.dataset.dir); });
 });
 
-// Свайп по всему экрану
-let touchStartX = 0, touchStartY = 0;
-const SWIPE_THRESHOLD = 20;
-
-document.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive: false });
-
+// Блокируем скролл и pull-to-refresh во время игры
 document.addEventListener('touchmove', e => {
   if (running) e.preventDefault();
-  if (!running) return;
-  const dx = e.touches[0].clientX - touchStartX;
-  const dy = e.touches[0].clientY - touchStartY;
-  if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    setDir(dx > 0 ? 'right' : 'left');
-  } else {
-    setDir(dy > 0 ? 'down' : 'up');
-  }
-  // сбрасываем точку — следующий свайп в этом же касании тоже сработает
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
 }, { passive: false });
 
 // Клавиатура
@@ -765,7 +735,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   init();
   running = true;
   document.getElementById('start-btn').style.display = 'none';
-  if (isDesktop) document.getElementById('controls').style.display = 'none'; // на мобиле управление свайпом
+  if (!isDesktop) document.getElementById('controls').style.display = 'grid';
   clearInterval(gameInterval);
   gameInterval = setInterval(step, 230);
 });
