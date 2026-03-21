@@ -28,7 +28,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
+  padding: 8px;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
@@ -500,7 +500,7 @@ let currentSkin = 'classic';
 const isDesktop = window.matchMedia('(min-width: 768px)').matches;
 const COLS = 15;
 const ROWS = 20;
-const CELL = isDesktop ? 28 : Math.floor((window.innerWidth - 32) / COLS);
+const CELL = isDesktop ? 28 : Math.floor((window.innerWidth - 16) / COLS);
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = COLS * CELL;
