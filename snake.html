@@ -231,7 +231,17 @@ canvas {
   display: block;
 }
 .skin-label { font-size: 0.7rem; color: #8899aa; text-align: center; }
+.modal .name-error {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  display: none;
+}
+.modal .name-error.show {
+  display: block;
+}
 </style>
+<script src="badwords.js"></script>
 </head>
 <body>
 
@@ -258,6 +268,7 @@ canvas {
     <h2>Игра окончена!</h2>
     <div class="final-score" id="final-score">0</div>
     <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
+    <div class="name-error" id="name-error"></div>
     <button id="save-btn">Сохранить результат</button>
   </div>
 </div>
@@ -442,9 +453,26 @@ document.getElementById('player-name').addEventListener('keydown', e => {
 });
 
 function saveResult() {
-  const name = document.getElementById('player-name').value.trim() || 'Аноним';
+  const input = document.getElementById('player-name');
+  const errorEl = document.getElementById('name-error');
+  const name = input.value.trim() || 'Аноним';
+
+  // Проверка на мат/оскорбления
+  if (name !== 'Аноним') {
+    const lower = name.toLowerCase();
+    const found = window.BADWORDS.find(w => lower.includes(w));
+    if (found) {
+      errorEl.textContent = 'Сам ты "' + found + '"! Введи нормальное имя.';
+      errorEl.classList.add('show');
+      input.value = '';
+      input.focus();
+      return;
+    }
+  }
+
+  errorEl.classList.remove('show');
   document.getElementById('gameover-overlay').classList.remove('show');
-  document.getElementById('player-name').value = '';
+  input.value = '';
   fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({ name, score }),
