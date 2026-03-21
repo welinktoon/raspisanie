@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Block Blast</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+a { color: #4fc3f7; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back { font-size: 0.9rem; margin-bottom: 8px; align-self: flex-start; }
+h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
+#score-display { font-size: 1rem; color: #f5d76e; margin-bottom: 8px; font-weight: 700; }
+#board {
+  border: 2px solid #4fc3f7;
+  border-radius: 8px;
+  background: #0f3460;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  padding: 4px;
+  max-width: 400px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.cell {
+  background: #16213e;
+  border-radius: 3px;
+  aspect-ratio: 1;
+  transition: background 0.15s;
+}
+.cell.filled { border: 1px solid rgba(255,255,255,0.15); }
+.cell.preview { opacity: 0.4; }
+.cell.clearing {
+  animation: clearFlash 0.4s ease-out;
+}
+@keyframes clearFlash {
+  0% { background: #fff; transform: scale(1.1); }
+  100% { background: #16213e; transform: scale(1); }
+}
+#pieces-area {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  min-height: 110px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.piece-container {
+  cursor: grab;
+  padding: 6px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.15s;
+  display: grid;
+  gap: 2px;
+}
+.piece-container:hover { border-color: rgba(79,195,247,0.3); }
+.piece-container.dragging { opacity: 0.3; transform: scale(0.9); }
+.piece-container.impossible { opacity: 0.3; }
+.piece-cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+}
+.piece-cell.filled { border: 1px solid rgba(255,255,255,0.15); }
+.piece-cell.empty { background: transparent; }
+
+#drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+  gap: 2px;
+}
+#drag-preview .piece-cell { border-radius: 3px; }
+
+#start-btn {
+  margin-top: 16px;
+  padding: 14px 40px;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+#start-btn:hover { background: #29b6f6; }
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.overlay.show { display: flex; }
+.modal {
+  background: #16213e;
+  border: 2px solid #4fc3f7;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+}
+.modal h2 { color: #f5d76e; margin-bottom: 6px; font-size: 1.3rem; }
+.modal .final-score { font-size: 2rem; color: #fff; font-weight: 700; margin-bottom: 16px; }
+.modal input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #4fc3f7;
+  border-radius: 8px;
+  background: #0f3460;
+  color: #fff;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 12px;
+  outline: none;
+}
+.modal input::placeholder { color: #556; }
+.modal button {
+  width: 100%;
+  padding: 12px;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal button:hover { background: #29b6f6; }
+
+.leaderboard {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 340px;
+}
+.leaderboard h3 {
+  text-align: center;
+  color: #f5d76e;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lb-table th {
+  background: #0f3460;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #8899aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.lb-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1a1a3e;
+  font-size: 0.95rem;
+}
+.lb-table .rank { text-align: center; width: 36px; }
+.lb-table .pts { text-align: right; font-weight: 700; color: #4fc3f7; }
+.lb-table tr.top-1 td {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1.05rem;
+  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,0,0.06));
+  border-top: 2px solid #ffd700;
+  border-bottom: 2px solid #ffd700;
+  text-shadow: 0 0 8px rgba(255,215,0,0.3);
+}
+.lb-table tr.top-1 td:first-child { border-left: 2px solid #ffd700; border-radius: 8px 0 0 8px; }
+.lb-table tr.top-1 td:last-child { border-right: 2px solid #ffd700; border-radius: 0 8px 8px 0; }
+.lb-table tr.top-1 .pts { color: #ffd700; }
+.lb-table tr.top-2 td {
+  color: #c0c0c0;
+  font-weight: 600;
+  background: rgba(192,192,192,0.06);
+  border-bottom: 1px solid rgba(192,192,192,0.3);
+}
+.lb-table tr.top-2 .pts { color: #c0c0c0; }
+.lb-table tr.top-3 td {
+  color: #cd7f32;
+  font-weight: 600;
+  background: rgba(205,127,50,0.06);
+  border-bottom: 1px solid rgba(205,127,50,0.3);
+}
+.lb-table tr.top-3 .pts { color: #cd7f32; }
+.lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
+.modal .name-error {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  display: none;
+  text-shadow: 0 0 10px rgba(255,107,107,0.3);
+}
+.modal .name-error.show {
+  display: block;
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+#combo-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 2rem;
+  font-weight: 900;
+  color: #f5d76e;
+  text-shadow: 0 0 20px rgba(245,215,110,0.6);
+  pointer-events: none;
+  z-index: 50;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  opacity: 0;
+}
+#combo-popup.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<div class="back"><a href="index.html">&larr; Расписание</a></div>
+<h1>Block Blast</h1>
+<div id="score-display">Очки: 0</div>
+
+<div id="board"></div>
+
+<div id="pieces-area"></div>
+
+<button id="start-btn">Играть</button>
+
+<div id="drag-preview"></div>
+<div id="combo-popup"></div>
+
+<div class="overlay" id="gameover-overlay">
+  <div class="modal">
+    <h2>Игра окончена!</h2>
+    <div class="final-score" id="final-score">0</div>
+    <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
+    <div class="name-error" id="name-error"></div>
+    <button id="save-btn">Сохранить результат</button>
+  </div>
+</div>
+
+<div class="leaderboard">
+  <h3>Таблица лидеров</h3>
+  <div id="lb-body"></div>
+</div>
+
+<script src="badwords.js"></script>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzlRz7DiKX5KFeW4voAsTlww8Vn-PkYmlWi7FsvoEVjOTr6_ZX862aiBApuctyoHXjw/exec';
+
+const COLORS = ['#4fc3f7','#f5d76e','#7dcea0','#e74c3c','#9b59b6','#ff8c00','#1abc9c'];
+const SIZE = 8;
+
+const SHAPES = [
+  [[1]],
+  [[1,1]],
+  [[1],[1]],
+  [[1,1,1]],
+  [[1],[1],[1]],
+  [[1,1],[1,1]],
+  [[1,1,1],[1,0,0]],
+  [[1,0,0],[1,1,1]],
+  [[1,1,1],[0,0,1]],
+  [[0,0,1],[1,1,1]],
+  [[1,1],[0,1]],
+  [[0,1],[1,1]],
+  [[1,0],[1,1]],
+  [[1,1],[1,0]],
+  [[1,1,1,1]],
+  [[1],[1],[1],[1]],
+  [[1,1,1,1,1]],
+  [[1],[1],[1],[1],[1]],
+  [[1,1,1],[0,1,0]],
+  [[0,1],[1,1],[0,1]],
+  [[0,1,0],[1,1,1]],
+  [[1,0],[1,1],[1,0]],
+  [[1,1,0],[0,1,1]],
+  [[0,1,1],[1,1,0]],
+  [[1,1,1],[1,1,1],[1,1,1]],
+  [[1,0],[1,0],[1,1]],
+  [[0,1],[0,1],[1,1]],
+  [[1,1],[0,1],[0,1]],
+  [[1,1],[1,0],[1,0]],
+];
+
+let board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+let score = 0;
+let pieces = [];
+let running = false;
+let dragPiece = null;
+let dragIndex = -1;
+
+const boardEl = document.getElementById('board');
+const piecesEl = document.getElementById('pieces-area');
+const scoreEl = document.getElementById('score-display');
+const dragPreview = document.getElementById('drag-preview');
+const comboPopup = document.getElementById('combo-popup');
+
+function init() {
+  board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+  score = 0;
+  updateScore();
+  renderBoard();
+  pieces = [randomPiece(), randomPiece(), randomPiece()];
+  renderPieces();
+  running = true;
+  document.getElementById('start-btn').style.display = 'none';
+}
+
+function randomPiece() {
+  const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+  return { shape, color, placed: false };
+}
+
+function updateScore() {
+  scoreEl.textContent = 'Очки: ' + score;
+}
+
+function renderBoard() {
+  boardEl.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (board[r][c]) {
+        cell.classList.add('filled');
+        cell.style.background = board[r][c];
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function renderPieces() {
+  piecesEl.innerHTML = '';
+  pieces.forEach((p, idx) => {
+    if (p.placed) return;
+    const rows = p.shape.length;
+    const cols = p.shape[0].length;
+    const container = document.createElement('div');
+    container.className = 'piece-container';
+    container.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
+    container.dataset.idx = idx;
+
+    if (!canPlaceAnywhere(p)) {
+      container.classList.add('impossible');
+    }
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'piece-cell';
+        if (p.shape[r][c]) {
+          cell.classList.add('filled');
+          cell.style.background = p.color;
+        } else {
+          cell.classList.add('empty');
+        }
+        container.appendChild(cell);
+      }
+    }
+
+    container.addEventListener('mousedown', e => startDrag(e, idx));
+    container.addEventListener('touchstart', e => startDrag(e, idx), {passive: false});
+    piecesEl.appendChild(container);
+  });
+}
+
+function canPlace(piece, startR, startC) {
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[0].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      const br = startR + r;
+      const bc = startC + c;
+      if (br < 0 || br >= SIZE || bc < 0 || bc >= SIZE) return false;
+      if (board[br][bc]) return false;
+    }
+  }
+  return true;
+}
+
+function canPlaceAnywhere(piece) {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (canPlace(piece, r, c)) return true;
+    }
+  }
+  return false;
+}
+
+function placePiece(piece, startR, startC) {
+  let cells = 0;
+  for (let r = 0; r < piece.shape.length; r++) {
+    for (let c = 0; c < piece.shape[0].length; c++) {
+      if (!piece.shape[r][c]) continue;
+      board[startR + r][startC + c] = piece.color;
+      cells++;
+    }
+  }
+  score += cells;
+  updateScore();
+}
+
+function checkAndClearLines() {
+  const rowsToClear = [];
+  const colsToClear = [];
+
+  for (let r = 0; r < SIZE; r++) {
+    if (board[r].every(c => c !== null)) rowsToClear.push(r);
+  }
+  for (let c = 0; c < SIZE; c++) {
+    let full = true;
+    for (let r = 0; r < SIZE; r++) {
+      if (!board[r][c]) { full = false; break; }
+    }
+    if (full) colsToClear.push(c);
+  }
+
+  const totalLines = rowsToClear.length + colsToClear.length;
+  if (totalLines === 0) return;
+
+  const cellsToClear = new Set();
+  rowsToClear.forEach(r => {
+    for (let c = 0; c < SIZE; c++) cellsToClear.add(r * SIZE + c);
+  });
+  colsToClear.forEach(c => {
+    for (let r = 0; r < SIZE; r++) cellsToClear.add(r * SIZE + c);
+  });
+
+  // Bonus: 10 per line + combo bonus
+  const lineBonus = totalLines * 10;
+  const comboBonus = totalLines > 1 ? totalLines * 20 : 0;
+  score += lineBonus + comboBonus;
+  updateScore();
+
+  if (totalLines > 1) {
+    showCombo(totalLines, lineBonus + comboBonus);
+  }
+
+  // Animation
+  const boardCells = boardEl.querySelectorAll('.cell');
+  cellsToClear.forEach(idx => {
+    boardCells[idx].classList.add('clearing');
+  });
+
+  setTimeout(() => {
+    cellsToClear.forEach(idx => {
+      const r = Math.floor(idx / SIZE);
+      const c = idx % SIZE;
+      board[r][c] = null;
+    });
+    renderBoard();
+    renderPieces();
+  }, 400);
+}
+
+function showCombo(lines, bonus) {
+  comboPopup.textContent = `x${lines} +${bonus}`;
+  comboPopup.classList.add('show');
+  setTimeout(() => comboPopup.classList.remove('show'), 800);
+}
+
+function checkGameOver() {
+  const remaining = pieces.filter(p => !p.placed);
+  if (remaining.length === 0) {
+    pieces = [randomPiece(), randomPiece(), randomPiece()];
+    renderPieces();
+  }
+  const active = pieces.filter(p => !p.placed);
+  const anyCanPlace = active.some(p => canPlaceAnywhere(p));
+  if (!anyCanPlace) {
+    gameOver();
+  }
+}
+
+function gameOver() {
+  running = false;
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('gameover-overlay').classList.add('show');
+  document.getElementById('player-name').focus();
+  document.getElementById('start-btn').style.display = 'block';
+}
+
+// --- Drag & Drop ---
+let dragOffsetR = 0, dragOffsetC = 0;
+
+function startDrag(e, idx) {
+  if (!running) return;
+  const piece = pieces[idx];
+  if (piece.placed) return;
+  e.preventDefault();
+
+  dragPiece = piece;
+  dragIndex = idx;
+
+  const containers = piecesEl.querySelectorAll('.piece-container');
+  containers.forEach(c => {
+    if (parseInt(c.dataset.idx) === idx) c.classList.add('dragging');
+  });
+
+  // Build preview matching board cell size
+  const rows = piece.shape.length;
+  const cols = piece.shape[0].length;
+  const boardRect = boardEl.getBoundingClientRect();
+  const cellPx = Math.floor(boardRect.width / SIZE) - 2;
+  dragPreview.style.display = 'grid';
+  dragPreview.style.gridTemplateColumns = `repeat(${cols}, ${cellPx}px)`;
+  dragPreview.style.gap = '2px';
+  dragPreview.innerHTML = '';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'piece-cell';
+      cell.style.width = cellPx + 'px';
+      cell.style.height = cellPx + 'px';
+      if (piece.shape[r][c]) {
+        cell.classList.add('filled');
+        cell.style.background = piece.color;
+      } else {
+        cell.classList.add('empty');
+      }
+      dragPreview.appendChild(cell);
+    }
+  }
+
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchmove', onDrag, {passive: false});
+  document.addEventListener('touchend', endDrag);
+
+  onDrag(e);
+}
+
+function getPos(e) {
+  if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
+}
+
+function onDrag(e) {
+  e.preventDefault();
+  const pos = getPos(e);
+  dragPreview.style.left = (pos.x - dragPreview.offsetWidth / 2) + 'px';
+  dragPreview.style.top = (pos.y - dragPreview.offsetHeight - 40) + 'px';
+
+  clearPreview();
+  // Calculate board cell from cursor position offset upward by half piece height
+  const rect = boardEl.getBoundingClientRect();
+  const cellSize = rect.width / SIZE;
+  const pieceRows = dragPiece ? dragPiece.shape.length : 0;
+  const pieceCols = dragPiece ? dragPiece.shape[0].length : 0;
+  const targetX = pos.x - (pieceCols * cellSize) / 2;
+  const targetY = pos.y - (pieceRows * cellSize) - 20;
+  const cell = getBoardCell(targetX + cellSize / 2, targetY + cellSize / 2);
+  if (cell) {
+    showPreview(cell.r, cell.c);
+  }
+}
+
+function endDrag(e) {
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', endDrag);
+  document.removeEventListener('touchmove', onDrag);
+  document.removeEventListener('touchend', endDrag);
+
+  dragPreview.style.display = 'none';
+  clearPreview();
+
+  const pos = e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY };
+  const rect = boardEl.getBoundingClientRect();
+  const cellSize = rect.width / SIZE;
+  const pieceRows = dragPiece ? dragPiece.shape.length : 0;
+  const pieceCols = dragPiece ? dragPiece.shape[0].length : 0;
+  const targetX = pos.x - (pieceCols * cellSize) / 2;
+  const targetY = pos.y - (pieceRows * cellSize) - 20;
+  const cell = getBoardCell(targetX + cellSize / 2, targetY + cellSize / 2);
+
+  if (cell && dragPiece && canPlace(dragPiece, cell.r, cell.c)) {
+    placePiece(dragPiece, cell.r, cell.c);
+    pieces[dragIndex].placed = true;
+    renderBoard();
+    renderPieces();
+    setTimeout(() => {
+      checkAndClearLines();
+      setTimeout(() => checkGameOver(), 450);
+    }, 50);
+  }
+
+  const containers = piecesEl.querySelectorAll('.piece-container');
+  containers.forEach(c => c.classList.remove('dragging'));
+
+  dragPiece = null;
+  dragIndex = -1;
+}
+
+function getBoardCell(x, y) {
+  const rect = boardEl.getBoundingClientRect();
+  const cellSize = rect.width / SIZE;
+  const c = Math.floor((x - rect.left) / cellSize);
+  const r = Math.floor((y - rect.top) / cellSize);
+  if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return null;
+  return { r, c };
+}
+
+function showPreview(startR, startC) {
+  if (!dragPiece) return;
+  const valid = canPlace(dragPiece, startR, startC);
+  const cells = boardEl.querySelectorAll('.cell');
+  for (let r = 0; r < dragPiece.shape.length; r++) {
+    for (let c = 0; c < dragPiece.shape[0].length; c++) {
+      if (!dragPiece.shape[r][c]) continue;
+      const br = startR + r;
+      const bc = startC + c;
+      if (br >= 0 && br < SIZE && bc >= 0 && bc < SIZE) {
+        const idx = br * SIZE + bc;
+        cells[idx].classList.add('preview');
+        cells[idx].style.background = valid ? dragPiece.color : '#e74c3c';
+      }
+    }
+  }
+}
+
+function clearPreview() {
+  boardEl.querySelectorAll('.cell.preview').forEach(c => {
+    c.classList.remove('preview');
+    const r = parseInt(c.dataset.r);
+    const col = parseInt(c.dataset.c);
+    c.style.background = board[r][col] || '';
+  });
+}
+
+// Start
+document.getElementById('start-btn').addEventListener('click', init);
+
+// Leaderboard
+document.getElementById('save-btn').addEventListener('click', saveResult);
+document.getElementById('player-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveResult();
+});
+
+function normalizeName(str) {
+  const lat2cyr = {a:'а',b:'б',c:'с',e:'е',h:'н',k:'к',m:'м',o:'о',p:'р',t:'т',x:'х',y:'у',i:'и',u:'у',d:'д',n:'н',r:'р',l:'л',w:'ш',v:'в',g:'г',z:'з',f:'ф',j:'й',q:'к'};
+  let s = str.toLowerCase();
+  s = s.replace(/[^a-zа-яёa-zа-яё]/gi, '');
+  s = s.split('').map(c => lat2cyr[c] || c).join('');
+  return s;
+}
+
+function saveResult() {
+  const input = document.getElementById('player-name');
+  const errorEl = document.getElementById('name-error');
+  const name = input.value.trim() || 'Аноним';
+
+  if (name !== 'Аноним') {
+    const normalized = normalizeName(name);
+    const lower = name.toLowerCase();
+    const found = window.BADWORDS.find(w => {
+      const nw = normalizeName(w);
+      return lower.includes(w) || normalized.includes(nw);
+    });
+    if (found) {
+      errorEl.textContent = 'Сам ты "' + found + '"! Введи нормальное имя.';
+      errorEl.classList.add('show');
+      input.value = '';
+      input.focus();
+      return;
+    }
+  }
+
+  errorEl.classList.remove('show');
+  document.getElementById('gameover-overlay').classList.remove('show');
+  input.value = '';
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ name, score }),
+  }).then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+}
+
+function renderLeaderboard() {
+  const el = document.getElementById('lb-body');
+  el.innerHTML = '<div class="lb-empty">Загрузка...</div>';
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(lb => {
+      if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
+      let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
+      lb.forEach((r, i) => {
+        const cls = i < 3 ? ` class="top-${i + 1}"` : '';
+        html += `<tr${cls}><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+      });
+      html += '</table>';
+      el.innerHTML = html;
+    })
+    .catch(() => { el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; });
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+renderBoard();
+renderLeaderboard();
+</script>
+</body>
+</html>
