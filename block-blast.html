@@ -16,6 +16,7 @@ body {
   align-items: center;
   padding: 12px;
   touch-action: manipulation;
+  overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -35,7 +36,9 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   max-width: 400px;
   width: 100%;
   aspect-ratio: 1;
+  touch-action: none;
 }
+#pieces-area { touch-action: none; }
 .cell {
   background: #16213e;
   border-radius: 3px;
@@ -264,6 +267,11 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   #start-btn { margin-top: 12px; }
 }
 
+/* ── Игровой режим: скрыть лишнее ── */
+body.playing .back { display: none; }
+body.playing .leaderboard { display: none; }
+body.playing #start-btn { display: none !important; }
+
 /* ── Тема: Неон (501–1000) ── */
 @keyframes neonPulse {
   0%,100% { box-shadow: 0 0 8px #0ff, 0 0 20px #0ff; border-color: #0ff; }
@@ -461,6 +469,7 @@ function init() {
   board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
   score = 0;
   document.body.classList.remove('theme-neon', 'theme-cosmic', 'theme-hell');
+  document.body.classList.add('playing');
   updateScore();
   renderBoard();
   pieces = generateThreePieces();
@@ -672,6 +681,7 @@ function checkGameOver() {
 
 function gameOver() {
   running = false;
+  document.body.classList.remove('playing');
   document.getElementById('final-score').textContent = score;
   document.getElementById('gameover-overlay').classList.add('show');
   document.getElementById('player-name').focus();
