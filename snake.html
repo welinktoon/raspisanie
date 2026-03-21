@@ -453,7 +453,8 @@ const SKINS = {
 };
 let currentSkin = 'classic';
 
-const CELL = 20;
+const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+const CELL = isDesktop ? 28 : 20;
 const COLS = 15;
 const ROWS = 20;
 const canvas = document.getElementById('game');
