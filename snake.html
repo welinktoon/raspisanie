@@ -716,6 +716,7 @@ function gameOver() {
   document.getElementById('player-name').focus();
   document.getElementById('start-btn').style.display = 'block';
   document.getElementById('controls').style.display = 'none';
+  document.getElementById('skins-toggle-mob').style.visibility = 'visible';
 }
 
 function setDir(d) {
@@ -748,6 +749,8 @@ document.getElementById('start-btn').addEventListener('click', () => {
   init();
   running = true;
   document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('skins-toggle-mob').style.visibility = 'hidden';
+  document.getElementById('skins-panel').classList.remove('open');
   if (!isDesktop) document.getElementById('controls').style.display = 'grid';
   clearInterval(gameInterval);
   gameInterval = setInterval(step, 230);
