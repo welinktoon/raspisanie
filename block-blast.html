@@ -558,13 +558,13 @@ function checkAndClearLines() {
       board[r][c] = null;
     });
     renderBoard();
-    renderPieces();
-    if (dragPiece) {
-      const containers = piecesEl.querySelectorAll('.piece-container');
-      containers.forEach(c => {
-        if (parseInt(c.dataset.idx) === dragIndex) c.classList.add('dragging');
-      });
-    }
+    piecesEl.querySelectorAll('.piece-container').forEach(c => {
+      const idx = parseInt(c.dataset.idx);
+      const p = pieces[idx];
+      if (p && !p.placed) {
+        c.classList.toggle('impossible', !canPlaceAnywhere(p));
+      }
+    });
   }, 400);
 }
 
