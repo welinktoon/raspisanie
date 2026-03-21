@@ -241,7 +241,7 @@ canvas {
 }
 
 #lb-body {
-  min-height: 200px;
+  min-height: 365px;
 }
 
 .lb-table {
@@ -735,11 +735,12 @@ document.addEventListener('touchmove', e => {
   if (running) e.preventDefault();
 }, { passive: false });
 
-// Клавиатура
+// Клавиатура (e.code — не зависит от раскладки и CapsLock)
 document.addEventListener('keydown', e => {
-  const map = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
-                w: 'up', s: 'down', a: 'left', d: 'right' };
-  if (map[e.key]) { e.preventDefault(); setDir(map[e.key]); }
+  const keyMap  = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+  const codeMap = { KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right' };
+  const d = keyMap[e.key] || codeMap[e.code];
+  if (d) { e.preventDefault(); setDir(d); }
 });
 
 // Старт
