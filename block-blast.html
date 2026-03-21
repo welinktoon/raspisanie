@@ -471,6 +471,7 @@ const SHAPES = [
 ];
 
 let isQuitting = false;
+let gameOverTimer = null;
 
 // Веса: обычные=3, тяжёлые (1×5, 5×1)=1, убийца (3×3)=1
 const SHAPE_WEIGHTS = [
@@ -734,6 +735,11 @@ function gameOver() {
   } else {
     document.getElementById('player-name').focus();
   }
+  if (gameOverTimer) clearTimeout(gameOverTimer);
+  gameOverTimer = setTimeout(() => {
+    document.getElementById('gameover-overlay').classList.remove('show');
+    gameOverTimer = null;
+  }, 3000);
 }
 
 // --- Drag & Drop ---
@@ -923,6 +929,7 @@ function saveResult() {
   }
 
   errorEl.classList.remove('show');
+  if (gameOverTimer) { clearTimeout(gameOverTimer); gameOverTimer = null; }
   document.getElementById('gameover-overlay').classList.remove('show');
   input.value = '';
   fetch(API_URL, {
