@@ -264,6 +264,79 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   #start-btn { margin-top: 12px; }
 }
 
+/* ── Тема: Неон (501–1000) ── */
+@keyframes neonPulse {
+  0%,100% { box-shadow: 0 0 8px #0ff, 0 0 20px #0ff; border-color: #0ff; }
+  50%      { box-shadow: 0 0 18px #f0f, 0 0 40px #f0f; border-color: #f0f; }
+}
+@keyframes neonScore {
+  0%,100% { text-shadow: 0 0 8px #0ff; color: #0ff; }
+  50%      { text-shadow: 0 0 16px #f0f; color: #f0f; }
+}
+body.theme-neon { background: #050510; }
+body.theme-neon #board {
+  background: #060620;
+  animation: neonPulse 2s ease-in-out infinite;
+}
+body.theme-neon .cell { background: #0a0a25; }
+body.theme-neon #score-display { animation: neonScore 2s ease-in-out infinite; }
+body.theme-neon h1 { color: #0ff; text-shadow: 0 0 10px #0ff; }
+
+/* ── Тема: Космос (1001–2000) ── */
+@keyframes starTwinkle {
+  0%,100% { opacity: 0.3; } 50% { opacity: 1; }
+}
+@keyframes cosmicBorder {
+  0%   { border-color: #7b2fff; box-shadow: 0 0 12px #7b2fff; }
+  33%  { border-color: #00cfff; box-shadow: 0 0 20px #00cfff; }
+  66%  { border-color: #ff2fd0; box-shadow: 0 0 20px #ff2fd0; }
+  100% { border-color: #7b2fff; box-shadow: 0 0 12px #7b2fff; }
+}
+body.theme-cosmic { background: #06001a; }
+body.theme-cosmic::before {
+  content: '✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦';
+  position: fixed; inset: 0;
+  font-size: 1rem; color: #fff;
+  display: flex; align-items: flex-start;
+  line-height: 2.5; letter-spacing: 1.8rem;
+  word-break: break-all; overflow: hidden;
+  pointer-events: none; z-index: 0;
+  opacity: 0.12;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+body.theme-cosmic #board {
+  background: #0a0025;
+  animation: cosmicBorder 4s linear infinite;
+  position: relative; z-index: 1;
+}
+body.theme-cosmic .cell { background: #100030; }
+body.theme-cosmic #score-display { color: #c77dff; text-shadow: 0 0 10px #7b2fff; }
+body.theme-cosmic h1 { color: #e0aaff; }
+body.theme-cosmic .game-layout { position: relative; z-index: 1; }
+
+/* ── Тема: Ад (2001+) ── */
+@keyframes hellBorder {
+  0%   { border-color: #ff4500; box-shadow: 0 0 15px #ff4500, 0 0 40px #ff2200; }
+  50%  { border-color: #ffaa00; box-shadow: 0 0 25px #ffaa00, 0 0 60px #ff6600; }
+  100% { border-color: #ff4500; box-shadow: 0 0 15px #ff4500, 0 0 40px #ff2200; }
+}
+@keyframes hellScore {
+  0%,100% { color: #ffd700; text-shadow: 0 0 10px #ff4500; }
+  50%      { color: #ff6600; text-shadow: 0 0 20px #ffaa00; }
+}
+@keyframes hellBg {
+  0%,100% { background: #1a0000; }
+  50%      { background: #200500; }
+}
+body.theme-hell { animation: hellBg 3s ease-in-out infinite; }
+body.theme-hell #board {
+  background: #1a0500;
+  animation: hellBorder 1.5s ease-in-out infinite;
+}
+body.theme-hell .cell { background: #220800; }
+body.theme-hell #score-display { animation: hellScore 1.5s ease-in-out infinite; }
+body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
+
 #combo-popup {
   position: fixed;
   top: 50%;
@@ -387,6 +460,7 @@ const comboPopup = document.getElementById('combo-popup');
 function init() {
   board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
   score = 0;
+  document.body.classList.remove('theme-neon', 'theme-cosmic', 'theme-hell');
   updateScore();
   renderBoard();
   pieces = generateThreePieces();
@@ -418,6 +492,15 @@ function generateThreePieces() {
 
 function updateScore() {
   scoreEl.textContent = 'Очки: ' + score;
+  updateTheme();
+}
+
+function updateTheme() {
+  const body = document.body;
+  body.classList.remove('theme-neon', 'theme-cosmic', 'theme-hell');
+  if (score > 2000)      body.classList.add('theme-hell');
+  else if (score > 1000) body.classList.add('theme-cosmic');
+  else if (score > 500)  body.classList.add('theme-neon');
 }
 
 function renderBoard() {
