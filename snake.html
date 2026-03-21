@@ -463,7 +463,9 @@ canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
 
 let snake, dir, nextDir, food, score, gameInterval, running;
-let bonusFood = null, eatenCount = 0, bonusTimeout = null;
+let bonusFood = null, eatenCount = 0, bonusTimeout = null, bonusFoodSpawnTime = 0;
+let darkFood = null, darkTimeout = null, darkFoodSpawnTime = 0;
+let currentSpeed = 230;
 
 function init() {
   const midX = Math.floor(COLS / 2);
@@ -477,8 +479,11 @@ function init() {
   nextDir = 'right';
   score = 0;
   eatenCount = 0;
-  bonusFood = null;
+  currentSpeed = 230;
+  bonusFood = null; bonusFoodSpawnTime = 0;
   if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  darkFood = null; darkFoodSpawnTime = 0;
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
   updateScore();
   placeFood();
   draw();
@@ -499,10 +504,38 @@ function placeBonus() {
     pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
   } while (
     snake.some(s => s.x === pos.x && s.y === pos.y) ||
-    (food.x === pos.x && food.y === pos.y)
+    (food.x === pos.x && food.y === pos.y) ||
+    (darkFood && darkFood.x === pos.x && darkFood.y === pos.y)
   );
   bonusFood = pos;
-  bonusTimeout = setTimeout(() => { bonusFood = null; draw(); bonusTimeout = null; }, 5000);
+  bonusFoodSpawnTime = Date.now();
+  bonusTimeout = setTimeout(() => { bonusFood = null; bonusTimeout = null; }, 5000);
+}
+
+function placeDark() {
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+  let pos;
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (
+    snake.some(s => s.x === pos.x && s.y === pos.y) ||
+    (food.x === pos.x && food.y === pos.y) ||
+    (bonusFood && bonusFood.x === pos.x && bonusFood.y === pos.y)
+  );
+  darkFood = pos;
+  darkFoodSpawnTime = Date.now();
+  darkTimeout = setTimeout(() => { darkFood = null; darkTimeout = null; }, 4000);
+}
+
+function checkSpeedAndSpecials() {
+  if (score >= 500 && currentSpeed === 230) {
+    currentSpeed = 200;
+    clearInterval(gameInterval);
+    gameInterval = setInterval(step, 200);
+  }
+  if (score >= 600 && score <= 700 && score % 20 === 0 && !darkFood) {
+    placeDark();
+  }
 }
 
 function draw() {
@@ -531,19 +564,31 @@ function draw() {
 
   // Бонусная еда
   if (bonusFood) {
-    ctx.shadowColor = '#ff3cff';
-    ctx.shadowBlur = 18;
-    ctx.fillStyle = '#ff3cff';
+    const bonusElapsed = Date.now() - bonusFoodSpawnTime;
+    const bonusBlinking = bonusElapsed > 2000;
+    const bonusVisible = !bonusBlinking || Math.floor(Date.now() / 200) % 2 === 0;
+    if (bonusVisible) {
+      ctx.shadowColor = '#ff3cff';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#ff3cff';
+      ctx.beginPath();
+      ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Тёмная еда (сокращает хвост)
+  if (darkFood) {
+    ctx.shadowColor = '#ff3333';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = '#111111';
     ctx.beginPath();
-    ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 1, 0, Math.PI * 2);
+    ctx.arc(darkFood.x * CELL + CELL / 2, darkFood.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
     ctx.fill();
-    // Звёздочка внутри
-    ctx.fillStyle = '#fff';
-    ctx.shadowBlur = 0;
-    ctx.font = `bold ${CELL - 6}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('★', bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2 + 1);
+    ctx.strokeStyle = '#ff3333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.shadowBlur = 0;
   }
 
@@ -593,11 +638,20 @@ function step() {
     updateScore();
     placeFood();
     if (eatenCount % 5 === 0) placeBonus();
+    checkSpeedAndSpecials();
   } else if (bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
     score += 30;
     updateScore();
     bonusFood = null;
     if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+    checkSpeedAndSpecials();
+  } else if (darkFood && head.x === darkFood.x && head.y === darkFood.y) {
+    darkFood = null;
+    if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
+    // Хвост -5 (snake уже с добавленной головой, убираем 6 чтобы получить -5)
+    for (let i = 0; i < 6; i++) {
+      if (snake.length > 1) snake.pop();
+    }
   } else {
     snake.pop();
   }
@@ -610,6 +664,8 @@ function gameOver() {
   clearInterval(gameInterval);
   bonusFood = null;
   if (bonusTimeout) { clearTimeout(bonusTimeout); bonusTimeout = null; }
+  darkFood = null;
+  if (darkTimeout) { clearTimeout(darkTimeout); darkTimeout = null; }
   document.getElementById('final-score').textContent = score;
   document.getElementById('gameover-overlay').classList.add('show');
   document.getElementById('player-name').focus();
@@ -643,8 +699,18 @@ document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('start-btn').style.display = 'none';
   document.getElementById('controls').style.display = 'grid';
   clearInterval(gameInterval);
-  gameInterval = setInterval(step, 200);
+  gameInterval = setInterval(step, 230);
 });
+
+// Цикл мигания бонусной еды (перерисовка независимо от шага змейки)
+function blinkLoop() {
+  if (running && bonusFood) {
+    const elapsed = Date.now() - bonusFoodSpawnTime;
+    if (elapsed > 2000) draw();
+  }
+  requestAnimationFrame(blinkLoop);
+}
+blinkLoop();
 
 // Сохранение результата
 document.getElementById('save-btn').addEventListener('click', saveResult);
