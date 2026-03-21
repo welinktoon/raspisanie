@@ -360,6 +360,20 @@ const SHAPES = [
   [[1,1],[1,0],[1,0]],
 ];
 
+// Веса: обычные=3, тяжёлые (1×5, 5×1)=1, убийца (3×3)=1
+const SHAPE_WEIGHTS = [
+  3,3,3,3,3,3, // 0-5
+  3,3,3,3,     // 6-9
+  3,3,3,3,     // 10-13
+  3,3,         // 14-15: 1×4, 4×1
+  1,1,         // 16-17: 1×5, 5×1 — тяжёлые
+  3,3,3,3,     // 18-21: T-фигуры
+  3,3,         // 22-23: S, Z
+  1,           // 24: 3×3 — убийца
+  3,3,3,3,     // 25-28
+];
+const SHAPE_TOTAL_WEIGHT = SHAPE_WEIGHTS.reduce((a, b) => a + b, 0);
+
 let board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
 let score = 0;
 let pieces = [];
@@ -378,16 +392,31 @@ function init() {
   score = 0;
   updateScore();
   renderBoard();
-  pieces = [randomPiece(), randomPiece(), randomPiece()];
+  pieces = generateThreePieces();
   renderPieces();
   running = true;
   document.getElementById('start-btn').style.display = 'none';
 }
 
 function randomPiece() {
-  const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  let rand = Math.random() * SHAPE_TOTAL_WEIGHT;
+  let idx = 0;
+  for (let i = 0; i < SHAPE_WEIGHTS.length; i++) {
+    rand -= SHAPE_WEIGHTS[i];
+    if (rand <= 0) { idx = i; break; }
+  }
+  const shape = SHAPES[idx];
   const color = COLORS[Math.floor(Math.random() * COLORS.length)];
   return { shape, color, placed: false };
+}
+
+function generateThreePieces() {
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const three = [randomPiece(), randomPiece(), randomPiece()];
+    if (three.every(p => canPlaceAnywhere(p))) return three;
+  }
+  // крайний случай: поле почти полное, берём что влезает
+  return [randomPiece(), randomPiece(), randomPiece()];
 }
 
 function updateScore() {
@@ -544,7 +573,7 @@ function showCombo(lines, bonus) {
 function checkGameOver() {
   const remaining = pieces.filter(p => !p.placed);
   if (remaining.length === 0) {
-    pieces = [randomPiece(), randomPiece(), randomPiece()];
+    pieces = generateThreePieces();
     renderPieces();
   }
   const active = pieces.filter(p => !p.placed);
