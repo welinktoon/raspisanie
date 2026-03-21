@@ -69,21 +69,21 @@ canvas {
 /* Controls */
 .controls {
   display: grid;
-  grid-template-areas: ". up ." "left down right";
+  grid-template-areas: "skin up ." "left down right";
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 5px;
   margin-top: 10px;
   width: 100%;
-  max-width: 280px;
+  max-width: 260px;
 }
 
 .ctrl-btn {
-  height: 68px;
+  height: 60px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
   color: var(--text-muted);
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,6 +96,13 @@ canvas {
 .ctrl-btn:active {
   background: var(--accent);
   color: var(--bg);
+}
+
+.ctrl-skin {
+  grid-area: skin;
+  font-size: 0.7rem;
+  letter-spacing: 0;
+  color: var(--text-muted);
 }
 
 .ctrl-up { grid-area: up; }
@@ -230,6 +237,10 @@ canvas {
   margin-top: 20px;
   width: 100%;
   max-width: 360px;
+}
+
+#lb-body {
+  min-height: 200px;
 }
 
 .lb-table {
@@ -415,6 +426,7 @@ canvas {
   .game-col { display: contents; }
   .kb-hint { display: none; }
   .swipe-hint { display: none; }
+  .skins-toggle-desktop { display: none; }
 }
 </style>
 <script src="badwords.js"></script>
@@ -431,10 +443,11 @@ canvas {
 
     <button id="start-btn">Играть</button>
 
-    <button class="skins-toggle" id="skins-toggle">Расцветка</button>
+    <button class="skins-toggle skins-toggle-desktop" id="skins-toggle">Расцветка</button>
     <div class="skins-panel" id="skins-panel"></div>
 
     <div class="controls" id="controls" style="display:none;">
+      <div class="ctrl-btn ctrl-skin" id="skins-toggle-mob">&#9632;</div>
       <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
       <div class="ctrl-btn ctrl-left" data-dir="left">&#9664;</div>
       <div class="ctrl-btn ctrl-down" data-dir="down">&#9660;</div>
@@ -844,6 +857,9 @@ function renderSkins() {
 }
 
 document.getElementById('skins-toggle').addEventListener('click', () => {
+  document.getElementById('skins-panel').classList.toggle('open');
+});
+document.getElementById('skins-toggle-mob').addEventListener('click', () => {
   document.getElementById('skins-panel').classList.toggle('open');
 });
 
