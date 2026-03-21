@@ -652,13 +652,12 @@ function onDrag(e) {
   dragPreview.style.top = (pos.y - dragPreview.offsetHeight - touchOffset) + 'px';
 
   clearPreview();
-  // Calculate board cell from cursor position offset upward by half piece height
   const rect = boardEl.getBoundingClientRect();
   const cellSize = rect.width / SIZE;
   const pieceRows = dragPiece ? dragPiece.shape.length : 0;
   const pieceCols = dragPiece ? dragPiece.shape[0].length : 0;
   const targetX = pos.x - (pieceCols * cellSize) / 2;
-  const targetY = pos.y - (pieceRows * cellSize) - 20;
+  const targetY = pos.y - (pieceRows * cellSize) - touchOffset;
   const cell = getBoardCell(targetX + cellSize / 2, targetY + cellSize / 2);
   if (cell) {
     showPreview(cell.r, cell.c);
@@ -675,12 +674,13 @@ function endDrag(e) {
   clearPreview();
 
   const pos = e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY };
+  const touchOffset = ('ontouchstart' in window) ? 70 : 40;
   const rect = boardEl.getBoundingClientRect();
   const cellSize = rect.width / SIZE;
   const pieceRows = dragPiece ? dragPiece.shape.length : 0;
   const pieceCols = dragPiece ? dragPiece.shape[0].length : 0;
   const targetX = pos.x - (pieceCols * cellSize) / 2;
-  const targetY = pos.y - (pieceRows * cellSize) - 20;
+  const targetY = pos.y - (pieceRows * cellSize) - touchOffset;
   const cell = getBoardCell(targetX + cellSize / 2, targetY + cellSize / 2);
 
   if (cell && dragPiece && canPlace(dragPiece, cell.r, cell.c)) {
