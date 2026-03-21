@@ -3,286 +3,326 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Расписание занятий</title>
+<title>Расписание</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e;
-    color: #e0e0e0;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 24px;
-    font-size: 1.6rem;
-    color: #fff;
-  }
-  .week {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .day {
-    background: #16213e;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.2s;
-  }
-  .day:hover { transform: translateY(-4px); }
-  .day.today { box-shadow: 0 0 0 2px #4fc3f7, 0 4px 20px rgba(79,195,247,0.3); }
-  .day-header {
-    padding: 10px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: 0.5px;
-  }
-  .day-header.mon { background: #e8a87c; color: #333; }
-  .day-header.tue { background: #f5d76e; color: #333; }
-  .day-header.wed { background: #7dcea0; color: #333; }
-  .day-header.thu { background: #85c1e9; color: #333; }
-  .day-header.fri { background: #c39bd3; color: #333; }
-  .lesson {
-    padding: 12px 14px;
-    border-bottom: 1px solid #1a1a3e;
-  }
-  .lesson:last-child { border-bottom: none; }
-  .lesson-time {
-    font-size: 0.82rem;
-    color: #8899aa;
-    margin-bottom: 4px;
-  }
-  .lesson-name {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #fff;
-  }
-  .lesson-room {
-    font-size: 0.85rem;
-    color: #6dbfb8;
-    margin-top: 2px;
-  }
-  .lesson.active {
-    background: rgba(79, 195, 247, 0.12);
-    border-left: 3px solid #4fc3f7;
-  }
-  .badge-now {
-    display: inline-block;
-    background: #4fc3f7;
-    color: #1a1a2e;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-  .no-classes {
-    padding: 30px 14px;
-    text-align: center;
-    color: #556;
-    font-style: italic;
-  }
-  #clock {
-    text-align: center;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-    color: #8899aa;
-  }
-  #week-range {
-    text-align: center;
-    margin-bottom: 12px;
-    font-size: 0.85rem;
-    color: #6dbfb8;
-  }
-  .day-date {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 400;
-    opacity: 0.8;
-  }
-  #status {
-    max-width: 500px;
-    margin: 0 auto 20px;
-    background: #16213e;
-    border-radius: 12px;
-    padding: 16px 20px;
-  }
-  #status:empty { display: none; }
-  .status-current { margin-bottom: 12px; }
-  .status-label {
-    font-size: 0.78rem;
-    color: #8899aa;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .status-pair {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #fff;
-  }
-  .status-pair .room {
-    font-weight: 400;
-    color: #6dbfb8;
-    font-size: 0.9rem;
-    margin-left: 6px;
-  }
-  .status-elapsed {
-    font-size: 0.82rem;
-    color: #8899aa;
-    margin-top: 2px;
-  }
-  .progress-wrap {
-    background: #0f3460;
-    border-radius: 6px;
-    height: 8px;
-    margin-top: 8px;
-    overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%;
-    border-radius: 6px;
-    background: linear-gradient(90deg, #4fc3f7, #29b6f6);
-    transition: width 1s linear;
-  }
-  .status-next {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #1a1a3e;
-  }
-  .status-next-text {
-    font-size: 0.9rem;
-    color: #c0c0c0;
-  }
-  .status-next-text strong { color: #fff; }
-  .status-next-text .time-left { color: #f5d76e; font-weight: 600; }
-  .status-free {
-    text-align: center;
-    color: #7dcea0;
-    font-size: 0.95rem;
-  }
-  @media (max-width: 768px) {
-    .week {
-      grid-template-columns: 1fr;
-      max-width: 420px;
-    }
-    .day { margin-bottom: 4px; }
-    .day:not(.today) .lesson { display: none; }
-    .day:not(.today) .day-header::after {
-      content: ' (нажмите)';
-      font-weight: 400;
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-    .day.expanded .lesson { display: block; }
-    .day.expanded .day-header::after { content: ''; }
-  }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 16px 16px 40px;
+}
+
+/* ── Tab nav ── */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+nav button {
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #8899aa;
+  background: #16213e;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+nav button.active { background: #4fc3f7; color: #1a1a2e; }
+
+/* ── Clock / status ── */
+#clock { text-align: center; margin-bottom: 4px; font-size: 0.88rem; color: #8899aa; }
+#week-range { text-align: center; margin-bottom: 12px; font-size: 0.85rem; color: #6dbfb8; }
+#status {
+  max-width: 500px;
+  margin: 0 auto 20px;
+  background: #16213e;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+#status:empty { display: none; }
+.status-label { font-size: 0.78rem; color: #8899aa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.status-pair { font-size: 1.15rem; font-weight: 700; color: #fff; }
+.status-pair .room { font-weight: 400; color: #6dbfb8; font-size: 0.9rem; margin-left: 6px; }
+.status-elapsed { font-size: 0.82rem; color: #8899aa; margin-top: 2px; }
+.progress-wrap { background: #0f3460; border-radius: 6px; height: 8px; margin-top: 8px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 6px; background: linear-gradient(90deg,#4fc3f7,#29b6f6); transition: width 1s linear; }
+.status-current { margin-bottom: 12px; }
+.status-next { margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a1a3e; }
+.status-next-text { font-size: 0.9rem; color: #c0c0c0; }
+.status-next-text strong { color: #fff; }
+.status-next-text .time-left { color: #f5d76e; font-weight: 600; }
+.status-free { text-align: center; color: #7dcea0; font-size: 0.95rem; }
+
+/* ── Schedule grid ── */
+.week {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.day { background: #16213e; border-radius: 12px; overflow: hidden; }
+.day.today { box-shadow: 0 0 0 2px #4fc3f7, 0 4px 20px rgba(79,195,247,0.3); }
+.day-header {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  letter-spacing: 0.3px;
+}
+.day-header.mon { background: #e8a87c; color: #333; }
+.day-header.tue { background: #f5d76e; color: #333; }
+.day-header.wed { background: #7dcea0; color: #333; }
+.day-header.thu { background: #85c1e9; color: #333; }
+.day-header.fri { background: #c39bd3; color: #333; }
+.day-name-wrap { display: flex; flex-direction: column; gap: 1px; }
+.day-date { font-size: 0.78rem; font-weight: 400; opacity: 0.75; }
+.chevron { font-size: 0.72rem; opacity: 0.55; transition: transform 0.2s; display: none; }
+.lesson { padding: 12px 14px; border-bottom: 1px solid #1a1a3e; }
+.lesson:last-child { border-bottom: none; }
+.lesson-time { font-size: 0.82rem; color: #8899aa; margin-bottom: 4px; }
+.lesson-name { font-weight: 700; font-size: 1rem; color: #fff; }
+.lesson-room { font-size: 0.85rem; color: #6dbfb8; margin-top: 2px; }
+.lesson.active { background: rgba(79,195,247,0.12); border-left: 3px solid #4fc3f7; }
+.badge-now {
+  display: inline-block;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.no-classes { padding: 28px 14px; text-align: center; color: #3a4a5a; font-style: italic; font-size: 0.88rem; }
+
+/* ── Homework section ── */
+#section-hw h1 { text-align: center; font-size: 1.5rem; color: #fff; margin-bottom: 4px; }
+.hw-subtitle { text-align: center; font-size: 0.82rem; color: #8899aa; margin-bottom: 20px; }
+.weeks-hw { max-width: 1200px; margin: 0 auto; }
+@media (min-width: 900px) { .weeks-hw { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; } }
+.week-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6dbfb8;
+  text-align: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.hw-day { background: #16213e; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+.hw-day.today { box-shadow: 0 0 0 2px #4fc3f7, 0 4px 20px rgba(79,195,247,0.2); }
+.hw-day.past { opacity: 0.35; }
+.hw-day-header {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.hw-day-header.mon { background: #e8a87c; color: #333; }
+.hw-day-header.tue { background: #f5d76e; color: #333; }
+.hw-day-header.wed { background: #7dcea0; color: #333; }
+.hw-day-header.thu { background: #85c1e9; color: #333; }
+.hw-day-header.fri { background: #c39bd3; color: #333; }
+.hw-day-badge { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 2px 9px; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; }
+.hw-item { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.hw-item:last-child { border-bottom: none; }
+.hw-subject { font-weight: 700; color: #fff; font-size: 0.95rem; margin-bottom: 3px; }
+.hw-text { font-size: 0.88rem; color: #b0b8c8; line-height: 1.45; }
+.no-hw { padding: 14px; text-align: center; color: #3a4a5a; font-size: 0.85rem; font-style: italic; }
+#hw-loading { text-align: center; padding: 40px 20px; color: #6dbfb8; font-size: 0.95rem; }
+#hw-error { text-align: center; padding: 18px; color: #ef9a9a; background: #16213e; border-radius: 12px; max-width: 400px; margin: 20px auto; font-size: 0.9rem; display: none; }
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid #1a1a3e;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footer-game {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.footer-admin {
+  display: inline-block;
+  padding: 12px 20px;
+  background: #16213e;
+  color: #556677;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  border: 1px solid #1a1a3e;
+  transition: color 0.15s;
+}
+.footer-admin:hover { color: #8899aa; }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .week { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+  .chevron { display: inline; }
+  .day.collapsed .lesson,
+  .day.collapsed .no-classes { display: none; }
+  .day.collapsed .chevron { transform: rotate(-90deg); }
+}
+@media (max-width: 899px) {
+  .hw-day:not(.today):not(.expanded) .hw-body { display: none; }
+}
 </style>
 </head>
 <body>
 
-<h1>Расписание занятий</h1>
-<div id="clock"></div>
-<div id="week-range"></div>
-<div id="status"></div>
+<nav>
+  <button id="tab-schedule" class="active" onclick="switchTab('schedule')">Расписание</button>
+  <button id="tab-hw" onclick="switchTab('hw')">Домашние задания</button>
+</nav>
 
-<div class="week" id="week"></div>
+<!-- ── Schedule ── -->
+<div id="section-schedule">
+  <div id="clock"></div>
+  <div id="week-range"></div>
+  <div id="status"></div>
+  <div class="week" id="week"></div>
+</div>
+
+<!-- ── Homework ── -->
+<div id="section-hw" style="display:none">
+  <h1>Домашние задания</h1>
+  <div class="hw-subtitle" id="hw-subtitle"></div>
+  <div id="hw-loading">Загрузка...</div>
+  <div id="hw-error"></div>
+  <div class="weeks-hw" id="weeks-hw" style="display:none"></div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <a href="snake.html" class="footer-game">Змейка</a>
+  <a href="block-blast.html" class="footer-game">Block Blast</a>
+  <a href="admin.html" class="footer-admin">Админка</a>
+</footer>
 
 <script>
-// Лекции в Я208 — даты по предметам (DD.MM.2026)
+// ── Tab switching ──────────────────────────────────────────────────────────
+
+let hwLoaded = false;
+
+function switchTab(tab) {
+  document.getElementById('section-schedule').style.display = tab === 'schedule' ? '' : 'none';
+  document.getElementById('section-hw').style.display       = tab === 'hw'       ? '' : 'none';
+  document.getElementById('tab-schedule').classList.toggle('active', tab === 'schedule');
+  document.getElementById('tab-hw').classList.toggle('active', tab === 'hw');
+  sessionStorage.setItem('tab', tab);
+  if (tab === 'hw' && !hwLoaded) { hwLoaded = true; loadHw(); }
+}
+
+const savedTab = sessionStorage.getItem('tab');
+if (savedTab === 'hw') switchTab('hw');
+
+// ── Schedule data ──────────────────────────────────────────────────────────
+
 const lectures = {
-  1: { // Понедельник 8:30
-    time: '8:30–10:00', room: 'Я208',
+  1: { time: '8:30–10:00', room: 'Я208',
     subjects: [
-      { name: 'МГ (лекция)', dates: ['09.02','02.03','16.03','06.04','20.04','04.05','18.05'] },
+      { name: 'МГ (лекция)',  dates: ['09.02','02.03','16.03','06.04','20.04','04.05','18.05'] },
       { name: 'ФКХ (лекция)', dates: ['16.02','09.03','23.03','13.04','27.04','11.05','25.05'] },
       { name: 'ПАТ (лекция)', dates: ['30.03'], room: 'Морф.к.' }
     ]
   },
-  2: { // Вторник 9:10
-    time: '9:10–10:40', room: 'Я208',
+  2: { time: '9:10–10:40', room: 'Я208',
     subjects: [
       { name: 'МФА (лекция)', dates: ['10.02','24.02','03.03','17.03','31.03','14.04','28.04','12.05','19.05','26.05'] },
       { name: 'ГИГ (лекция)', dates: ['17.02','10.03','24.03','07.04','21.04','05.05'] }
     ]
   },
-  3: { // Среда 9:10
-    time: '9:10–10:40', room: 'Я208',
+  3: { time: '9:10–10:40', room: 'Я208',
     subjects: [
       { name: 'МБХ (лекция)', dates: ['11.02','25.02','11.03','25.03','08.04','22.04','06.05'] },
       { name: 'БОТ (лекция)', dates: ['18.02','04.03','18.03','01.04','15.04','29.04','13.05'] }
     ]
   },
-  4: { // Четверг 9:10
-    time: '9:10–10:40', room: 'Я208',
+  4: { time: '9:10–10:40', room: 'Я208',
     subjects: [
       { name: 'ХПФ (лекция)', dates: ['12.02','26.02','12.03','26.03','09.04','23.04','07.05'] },
       { name: 'ПДвФ (лекция)', dates: ['19.02','05.03','19.03','02.04','16.04','30.04','14.05'] }
     ]
   },
-  5: { // Пятница 9:10
-    time: '9:10–10:40', room: 'Я208',
+  5: { time: '9:10–10:40', room: 'Я208',
     subjects: [
       { name: 'ОФХ (лекция)', dates: ['20.02','06.03','20.03','10.04','24.04','08.05','15.05','22.05','29.05','05.06'] },
       { name: 'ПАТ (лекция)', dates: ['13.02','27.02','13.03','27.03','03.04','17.04'], room: 'Морф.к.' }
     ]
   },
-  '5b': { // Пятница 15:20 — вторая лекция
-    time: '15:20–16:50', room: 'Я208',
+  '5b': { time: '15:20–16:50', room: 'Я208',
     subjects: [
       { name: 'ФР (лекция)', dates: ['13.02','20.02','27.02','06.03','13.03','20.03','27.03','03.04','10.04','17.04','24.04'] }
     ]
   }
 };
 
-// Постоянные пары (группа 2) — каждую неделю
 const fixedLessons = {
-  1: [ // Понедельник
+  1: [
     { time: '10:30–12:45', name: 'МФА', room: 'Я112' },
     { time: '14:10–15:40', name: 'ГИГ', room: 'Дистант' }
   ],
-  2: [ // Вторник
+  2: [
     { time: '11:10–12:40', name: 'ФКХ', room: 'А205' },
     { time: '13:10–14:40', name: 'БОТ', room: 'Комс-ая (3 эт)' }
   ],
-  3: [ // Среда
+  3: [
     { time: '11:10–13:25', name: 'ОФХ', room: 'Я112' },
     { time: '14:10–16:25', name: 'ПАТ', room: 'Морф. 4эт. 2к' },
     { time: '16:50–18:20', name: 'ФКС', room: 'Стадион' }
   ],
-  4: [ // Четверг
+  4: [
     { time: '11:10–13:25', name: 'ФР', room: 'Комс-ая (2 эт)' },
     { time: '14:10–15:40', name: 'ПДвФ', room: 'Я112' }
   ],
-  5: [ // Пятница
+  5: [
     { time: '11:10–12:40', name: 'МБХ', room: 'А215' },
-    { time: '13:30–15:00', name: 'МГ', room: 'Аптека' }
+    { time: '13:30–15:00', name: 'МГ',  room: 'Аптека' }
   ]
 };
 
-const dayNames = { 1: 'Понедельник', 2: 'Вторник', 3: 'Среда', 4: 'Четверг', 5: 'Пятница' };
-const dayShorts = { 1: 'mon', 2: 'tue', 3: 'wed', 4: 'fri', 5: 'fri' };
-const dayShortMap = { 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri' };
+const dayNames    = { 1:'Понедельник', 2:'Вторник', 3:'Среда', 4:'Четверг', 5:'Пятница' };
+const dayShortMap = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri' };
+const mmNames     = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 
-function fmtDate(d) {
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  return dd + '.' + mm;
+function fmtDateShort(d) {
+  return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 function getDisplayWeekMonday(now) {
-  const dow = now.getDay(); // 0=Sun, 6=Sat
+  const dow = now.getDay();
   const d = new Date(now);
-  if (dow === 0) { d.setDate(d.getDate() + 1); }
-  else if (dow === 6) { d.setDate(d.getDate() + 2); }
-  else { d.setDate(d.getDate() - (dow - 1)); }
-  d.setHours(0, 0, 0, 0);
+  if (dow === 0) d.setDate(d.getDate() + 1);
+  else if (dow === 6) d.setDate(d.getDate() + 2);
+  else d.setDate(d.getDate() - (dow - 1));
+  d.setHours(0,0,0,0);
   return d;
 }
 
@@ -299,218 +339,282 @@ function getLectureForDate(dayIdx, dateStr) {
 function buildWeekSchedule(now) {
   const monday = getDisplayWeekMonday(now);
   const week = [];
-
   for (let i = 0; i < 5; i++) {
     const date = new Date(monday);
     date.setDate(monday.getDate() + i);
     const dayIdx = i + 1;
-    const dateStr = fmtDate(date);
+    const dateStr = fmtDateShort(date);
     const lessons = [];
-
-    // Лекция 1 (утренняя)
     const lec1 = getLectureForDate(dayIdx, dateStr);
     if (lec1) lessons.push(lec1);
-
-    // Постоянные пары
-    if (fixedLessons[dayIdx]) {
-      lessons.push(...fixedLessons[dayIdx]);
-    }
-
-    // Пятница — вторая лекция
+    if (fixedLessons[dayIdx]) lessons.push(...fixedLessons[dayIdx]);
     if (dayIdx === 5) {
-      const lec2 = lectures['5b'];
-      for (const s of lec2.subjects) {
+      for (const s of lectures['5b'].subjects) {
         if (s.dates.includes(dateStr)) {
-          lessons.push({ time: lec2.time, name: s.name, room: lec2.room });
+          lessons.push({ time: lectures['5b'].time, name: s.name, room: lectures['5b'].room });
           break;
         }
       }
     }
-
-    // Сортировка по времени начала
-    lessons.sort((a, b) => {
-      const ta = parseTime(a.time.replace(/\u2013/g, '-').split('-')[0].trim());
-      const tb = parseTime(b.time.replace(/\u2013/g, '-').split('-')[0].trim());
-      return ta - tb;
-    });
-
-    const dd = date.getDate();
-    const mmNames = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-
+    lessons.sort((a, b) =>
+      parseTime(a.time.replace(/\u2013/g,'-').split('-')[0].trim()) -
+      parseTime(b.time.replace(/\u2013/g,'-').split('-')[0].trim())
+    );
     week.push({
-      day: dayNames[dayIdx],
-      short: dayShortMap[dayIdx],
-      idx: dayIdx,
-      date: date,
-      dateLabel: dd + ' ' + mmNames[date.getMonth()],
-      lessons: lessons
+      day: dayNames[dayIdx], short: dayShortMap[dayIdx], idx: dayIdx, date,
+      dateLabel: date.getDate() + ' ' + mmNames[date.getMonth()], lessons
     });
   }
   return week;
 }
 
-function parseTime(s) {
-  const [h, m] = s.split(':').map(Number);
-  return h * 60 + m;
-}
-
+function parseTime(s) { const [h,m] = s.split(':').map(Number); return h*60+m; }
 function getRange(timeStr) {
-  const parts = timeStr.replace(/\u2013/g, '-').split('-');
+  const parts = timeStr.replace(/\u2013/g,'-').split('-');
   return { start: parseTime(parts[0].trim()), end: parseTime(parts[1].trim()) };
 }
-
 function plural(n, one, few, many) {
-  const a = Math.abs(n) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return many;
-  if (b > 1 && b < 5) return few;
-  if (b === 1) return one;
+  const a = Math.abs(n)%100, b = a%10;
+  if (a>10&&a<20) return many;
+  if (b>1&&b<5) return few;
+  if (b===1) return one;
   return many;
 }
-
 function fmtMin(m) {
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
+  const h = Math.floor(m/60), mm = m%60;
   let s = '';
-  if (h > 0) s += h + ' ' + plural(h, 'час', 'часа', 'часов');
-  if (mm > 0) s += (s ? ' ' : '') + mm + ' ' + plural(mm, 'минуту', 'минуты', 'минут');
+  if (h>0) s += h+' '+plural(h,'час','часа','часов');
+  if (mm>0) s += (s?' ':'')+mm+' '+plural(mm,'минуту','минуты','минут');
   return s || '< 1 минуты';
 }
 
 function renderStatus(todayData, nowMin) {
   const el = document.getElementById('status');
-  if (!todayData || todayData.lessons.length === 0) { el.innerHTML = ''; return; }
-
+  if (!todayData || !todayData.lessons.length) { el.innerHTML = ''; return; }
   const lessons = todayData.lessons;
   let current = null, next = null;
-
   for (let i = 0; i < lessons.length; i++) {
     const r = getRange(lessons[i].time);
-    if (nowMin >= r.start && nowMin < r.end) {
-      current = { ...lessons[i], ...r, idx: i };
-    }
-    if (!next && nowMin < r.start) {
-      next = { ...lessons[i], ...r, idx: i };
-    }
+    if (nowMin >= r.start && nowMin < r.end) current = { ...lessons[i], ...r, idx: i };
+    if (!next && nowMin < r.start) next = { ...lessons[i], ...r, idx: i };
   }
-
-  const lastRange = getRange(lessons[lessons.length - 1].time);
+  const lastRange = getRange(lessons[lessons.length-1].time);
   if (!current && nowMin >= lastRange.end) {
-    el.innerHTML = '<div class="status-free">Пары на сегодня закончились</div>';
-    return;
+    el.innerHTML = '<div class="status-free">Пары на сегодня закончились</div>'; return;
   }
-
   const firstRange = getRange(lessons[0].time);
   if (!current && nowMin < firstRange.start) {
-    const left = firstRange.start - nowMin;
     el.innerHTML = `
       <div class="status-label">Первая пара через</div>
-      <div class="status-next-text"><strong>${lessons[0].name}</strong> <span class="time-left">через ${fmtMin(left)}</span></div>
-      <div class="status-elapsed">${lessons[0].time} / ${lessons[0].room}</div>
-    `;
+      <div class="status-next-text"><strong>${lessons[0].name}</strong> <span class="time-left">через ${fmtMin(firstRange.start-nowMin)}</span></div>
+      <div class="status-elapsed">${lessons[0].time} / ${lessons[0].room}</div>`;
     return;
   }
-
   let html = '';
   if (current) {
-    const elapsed = nowMin - current.start;
-    const total = current.end - current.start;
-    const pct = Math.min(100, Math.round(elapsed / total * 100));
-    const remaining = total - elapsed;
+    const elapsed = nowMin-current.start, total = current.end-current.start;
+    const pct = Math.min(100, Math.round(elapsed/total*100));
     html += `
       <div class="status-current">
         <div class="status-label">Сейчас идет</div>
         <div class="status-pair">${current.name}<span class="room">${current.room}</span></div>
-        <div class="status-elapsed">Прошло ${fmtMin(elapsed)} / осталось ${fmtMin(remaining)}</div>
+        <div class="status-elapsed">Прошло ${fmtMin(elapsed)} / осталось ${fmtMin(total-elapsed)}</div>
         <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
-      </div>
-    `;
+      </div>`;
     if (!next) {
-      for (let i = current.idx + 1; i < lessons.length; i++) {
+      for (let i = current.idx+1; i < lessons.length; i++) {
         const r = getRange(lessons[i].time);
         if (nowMin < r.start) { next = { ...lessons[i], ...r }; break; }
       }
     }
   }
-
   if (next) {
-    const left = next.start - nowMin;
     html += `
       <div class="status-next">
         <div class="status-label">Следующая</div>
-        <div class="status-next-text"><strong>${next.name}</strong> <span class="time-left">через ${fmtMin(left)}</span></div>
+        <div class="status-next-text"><strong>${next.name}</strong> <span class="time-left">через ${fmtMin(next.start-nowMin)}</span></div>
         <div class="status-elapsed">${next.time} / ${next.room}</div>
-      </div>
-    `;
+      </div>`;
   } else if (current) {
-    html += `<div class="status-next"><div class="status-free">Последняя пара на сегодня</div></div>`;
+    html += '<div class="status-next"><div class="status-free">Последняя пара на сегодня</div></div>';
   }
-
   el.innerHTML = html;
 }
 
 function render() {
   const now = new Date();
   const todayIdx = now.getDay();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowMin = now.getHours()*60+now.getMinutes();
   const isWeekend = todayIdx === 0 || todayIdx === 6;
 
   const week = buildWeekSchedule(now);
   const weekEl = document.getElementById('week');
   weekEl.innerHTML = '';
 
-  // Статус только для рабочего дня
   const todayData = isWeekend ? null : week.find(d => d.idx === todayIdx);
   renderStatus(todayData, nowMin);
 
-  // Заголовок с диапазоном дат недели
-  const weekLabel = week[0].dateLabel + ' – ' + week[4].dateLabel;
   document.getElementById('week-range').textContent =
-    (isWeekend ? 'Следующая неделя: ' : 'Текущая неделя: ') + weekLabel;
+    (isWeekend ? 'Следующая неделя: ' : 'Текущая неделя: ') +
+    week[0].dateLabel + ' – ' + week[4].dateLabel;
+
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('ru-RU', { weekday:'long', day:'numeric', month:'long' }) +
+    ', ' + now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
 
   week.forEach(d => {
     const isToday = !isWeekend && d.idx === todayIdx;
     const dayEl = document.createElement('div');
     dayEl.className = 'day' + (isToday ? ' today' : '');
-    dayEl.innerHTML = `<div class="day-header ${d.short}">${d.day}<span class="day-date">${d.dateLabel}</span></div>`;
 
-    if (d.lessons.length === 0) {
-      dayEl.innerHTML += '<div class="no-classes">Нет пар</div>';
+    const hdr = document.createElement('div');
+    hdr.className = 'day-header ' + d.short;
+    hdr.innerHTML = `
+      <div class="day-name-wrap">
+        <span>${d.day}</span>
+        <span class="day-date">${d.dateLabel}</span>
+      </div>
+      <span class="chevron">▼</span>`;
+    dayEl.appendChild(hdr);
+
+    if (!d.lessons.length) {
+      const nc = document.createElement('div');
+      nc.className = 'no-classes';
+      nc.textContent = 'Нет пар';
+      dayEl.appendChild(nc);
+    } else {
+      d.lessons.forEach(l => {
+        const r = getRange(l.time);
+        const active = isToday && nowMin >= r.start && nowMin < r.end;
+        const div = document.createElement('div');
+        div.className = 'lesson' + (active ? ' active' : '');
+        div.innerHTML = `
+          <div class="lesson-time">${l.time}${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}</div>
+          <div class="lesson-name">${l.name}</div>
+          <div class="lesson-room">${l.room}</div>`;
+        dayEl.appendChild(div);
+      });
     }
 
-    d.lessons.forEach(l => {
-      const r = getRange(l.time);
-      const active = isToday && nowMin >= r.start && nowMin < r.end;
-      const div = document.createElement('div');
-      div.className = 'lesson' + (active ? ' active' : '');
-      div.innerHTML = `
-        <div class="lesson-time">${l.time}${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}</div>
-        <div class="lesson-name">${l.name}</div>
-        <div class="lesson-room">${l.room}</div>
-      `;
-      dayEl.appendChild(div);
-    });
-
-    dayEl.addEventListener('click', () => dayEl.classList.toggle('expanded'));
+    hdr.addEventListener('click', () => dayEl.classList.toggle('collapsed'));
     weekEl.appendChild(dayEl);
   });
-
-  document.getElementById('clock').textContent =
-    now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) +
-    ', ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 }
 
 render();
 setInterval(render, 10000);
-</script>
 
-<div style="text-align:center; margin-top:32px; padding-bottom:24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-  <a href="snake.html" style="display:inline-block; padding:14px 32px; background:#4fc3f7; color:#1a1a2e; border-radius:10px; text-decoration:none; font-weight:700; font-size:1rem;">
-    Змейка
-  </a>
-  <a href="block-blast.html" style="display:inline-block; padding:14px 32px; background:#4fc3f7; color:#1a1a2e; border-radius:10px; text-decoration:none; font-weight:700; font-size:1rem;">
-    Block Blast
-  </a>
-</div>
+// ── Homework ──────────────────────────────────────────────────────────────
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwuSrAb4aoI79yMefk-bOemFjprKlbZd1yP7f1KgDr3Clc0aUTvjPEXDA1WTojnig9bdQ/exec';
+const HW_COLORS  = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri' };
+const HW_WDAYS   = { 1:'Понедельник', 2:'Вторник', 3:'Среда', 4:'Четверг', 5:'Пятница' };
+
+function toISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function parseToISO(str) {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? str : toISO(d);
+}
+function fmtFull(d) {
+  return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
+}
+function getMonday(d) {
+  const d2 = new Date(d);
+  const wd = d2.getDay();
+  d2.setDate(d2.getDate() + (wd===0 ? 1 : wd===6 ? 2 : -(wd-1)));
+  d2.setHours(0,0,0,0);
+  return d2;
+}
+
+function buildHwWeek(monday, allHw, today, label) {
+  const section = document.createElement('div');
+
+  const lbl = document.createElement('div');
+  lbl.className = 'week-label';
+  const fri = new Date(monday); fri.setDate(monday.getDate() + 4);
+  lbl.textContent = label + '  ·  ' + fmtFull(monday) + ' – ' + fmtFull(fri);
+  section.appendChild(lbl);
+
+  for (let i = 0; i < 5; i++) {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + i);
+    const iso    = toISO(date);
+    const wd     = i + 1;
+    const dayHw  = allHw.filter(h => h.deadline === iso);
+    const isToday = iso === toISO(today);
+    const isPast  = date < today;
+
+    const dayEl = document.createElement('div');
+    dayEl.className = 'hw-day' + (isToday ? ' today' : '') + (isPast ? ' past' : '');
+
+    const hdr = document.createElement('div');
+    hdr.className = 'hw-day-header ' + HW_COLORS[wd];
+    hdr.innerHTML = `
+      <div class="day-name-wrap">
+        <span>${HW_WDAYS[wd]}</span>
+        <span class="day-date">${fmtFull(date)}</span>
+      </div>
+      ${dayHw.length ? `<span class="hw-day-badge">${dayHw.length}</span>` : ''}`;
+
+    const body = document.createElement('div');
+    body.className = 'hw-body';
+    if (!dayHw.length) {
+      body.innerHTML = '<div class="no-hw">нет заданий</div>';
+    } else {
+      dayHw.forEach(hw => {
+        const item = document.createElement('div');
+        item.className = 'hw-item';
+        item.innerHTML = `
+          <div class="hw-subject">${hw.subject}</div>
+          <div class="hw-text">${hw.text}</div>`;
+        body.appendChild(item);
+      });
+    }
+
+    dayEl.appendChild(hdr);
+    dayEl.appendChild(body);
+    dayEl.addEventListener('click', () => dayEl.classList.toggle('expanded'));
+    section.appendChild(dayEl);
+  }
+  return section;
+}
+
+async function loadHw() {
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=list');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'ошибка API');
+
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const todayISO = toISO(today);
+    const hw       = (json.data || [])
+      .map(h => ({ ...h, deadline: parseToISO(h.deadline) }))
+      .filter(h => h.deadline >= todayISO);
+
+    const thisMonday = getMonday(today);
+    const nextMonday = new Date(thisMonday); nextMonday.setDate(thisMonday.getDate() + 7);
+    const nextFri    = new Date(nextMonday);  nextFri.setDate(nextMonday.getDate() + 4);
+
+    document.getElementById('hw-loading').style.display = 'none';
+    document.getElementById('hw-subtitle').textContent  =
+      fmtFull(thisMonday) + ' – ' + fmtFull(nextFri);
+
+    const weeksEl = document.getElementById('weeks-hw');
+    weeksEl.style.display = '';
+    weeksEl.appendChild(buildHwWeek(thisMonday, hw, today, 'Текущая неделя'));
+    weeksEl.appendChild(buildHwWeek(nextMonday, hw, today, 'Следующая неделя'));
+
+  } catch (e) {
+    document.getElementById('hw-loading').style.display = 'none';
+    const err = document.getElementById('hw-error');
+    err.textContent = 'Не удалось загрузить: ' + e.message;
+    err.style.display = '';
+  }
+}
+</script>
 </body>
 </html>
