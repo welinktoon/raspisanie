@@ -241,18 +241,18 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 .side-col { display: none; }
 
 @media (min-width: 800px) {
-  #board { width: 380px; max-width: 380px; }
-  .piece-cell { width: 32px; height: 32px; }
-  .piece-container { gap: 2px; }
-  #pieces-area { gap: 20px; min-height: 130px; width: 380px; justify-content: center; }
+  #board { width: 500px; max-width: 500px; }
+  .piece-cell { width: 36px; height: 36px; }
+  .piece-container { gap: 3px; }
+  #pieces-area { gap: 24px; min-height: 150px; width: 500px; justify-content: center; }
   .game-layout {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
     gap: 40px;
-    max-width: 800px;
+    max-width: 950px;
   }
-  .game-col { width: 380px; flex-shrink: 0; }
+  .game-col { width: 500px; flex-shrink: 0; }
   .side-col {
     display: block;
     min-width: 240px;
@@ -418,7 +418,7 @@ function renderPieces() {
     const cols = p.shape[0].length;
     const container = document.createElement('div');
     container.className = 'piece-container';
-    const pieceSize = window.innerWidth >= 800 ? 32 : 28;
+    const pieceSize = window.innerWidth >= 800 ? 36 : 28;
     container.style.gridTemplateColumns = `repeat(${cols}, ${pieceSize}px)`;
     container.dataset.idx = idx;
 
