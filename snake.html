@@ -8,7 +8,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e);
   color: #e0e0e0;
   min-height: 100vh;
   display: flex;
@@ -22,14 +22,27 @@ body {
 a { color: #4fc3f7; text-decoration: none; }
 a:hover { text-decoration: underline; }
 .back { font-size: 0.9rem; margin-bottom: 8px; align-self: flex-start; }
-h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
-#score-display { font-size: 1rem; color: #f5d76e; margin-bottom: 8px; font-weight: 700; }
+h1 {
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 4px;
+  text-shadow: 0 0 20px rgba(79,195,247,0.4);
+  letter-spacing: 2px;
+}
+#score-display {
+  font-size: 1.15rem;
+  color: #f5d76e;
+  margin-bottom: 10px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(245,215,110,0.3);
+}
 canvas {
-  border: 2px solid #4fc3f7;
-  border-radius: 8px;
+  border: 2px solid rgba(79,195,247,0.6);
+  border-radius: 12px;
   background: #0f3460;
   display: block;
   max-width: 100%;
+  box-shadow: 0 0 30px rgba(79,195,247,0.15), inset 0 0 60px rgba(0,0,0,0.3);
 }
 .controls {
   display: grid;
@@ -39,14 +52,14 @@ canvas {
   grid-template-columns: 70px 70px 70px;
   grid-template-rows: 70px 70px;
   gap: 6px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 .ctrl-btn {
   width: 70px;
   height: 70px;
-  border: 2px solid #4fc3f7;
-  border-radius: 14px;
-  background: #16213e;
+  border: 2px solid rgba(79,195,247,0.5);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #1a2744, #16213e);
   color: #4fc3f7;
   font-size: 1.8rem;
   display: flex;
@@ -54,9 +67,15 @@ canvas {
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
 }
-.ctrl-btn:active { background: #4fc3f7; color: #1a1a2e; }
+.ctrl-btn:active {
+  background: linear-gradient(145deg, #4fc3f7, #29b6f6);
+  color: #1a1a2e;
+  transform: scale(0.93);
+  box-shadow: 0 0 20px rgba(79,195,247,0.4);
+}
 .ctrl-up { grid-area: up; }
 .ctrl-down { grid-area: down; }
 .ctrl-left { grid-area: left; }
@@ -64,127 +83,176 @@ canvas {
 
 #start-btn {
   margin-top: 16px;
-  padding: 14px 40px;
-  background: #4fc3f7;
+  padding: 14px 44px;
+  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
   color: #1a1a2e;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 4px 20px rgba(79,195,247,0.35);
+  transition: all 0.2s ease;
+  animation: pulse-btn 2s ease-in-out infinite;
+  letter-spacing: 1px;
 }
-#start-btn:hover { background: #29b6f6; }
+#start-btn:hover {
+  background: linear-gradient(135deg, #29b6f6, #0288d1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(79,195,247,0.5);
+}
+@keyframes pulse-btn {
+  0%, 100% { box-shadow: 0 4px 20px rgba(79,195,247,0.35); }
+  50% { box-shadow: 0 4px 30px rgba(79,195,247,0.6); }
+}
 
 /* Модал GameOver */
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 100;
   align-items: center;
   justify-content: center;
 }
 .overlay.show { display: flex; }
+.overlay.show .modal {
+  animation: modal-in 0.3s ease-out;
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
 .modal {
-  background: #16213e;
-  border: 2px solid #4fc3f7;
-  border-radius: 16px;
-  padding: 28px 24px;
+  background: linear-gradient(145deg, rgba(22,33,62,0.95), rgba(15,52,96,0.9));
+  border: 1px solid rgba(79,195,247,0.4);
+  border-radius: 20px;
+  padding: 32px 28px;
   text-align: center;
   max-width: 320px;
   width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(79,195,247,0.1);
 }
-.modal h2 { color: #f5d76e; margin-bottom: 6px; font-size: 1.3rem; }
-.modal .final-score { font-size: 2rem; color: #fff; font-weight: 700; margin-bottom: 16px; }
+.modal h2 {
+  color: #f5d76e;
+  margin-bottom: 4px;
+  font-size: 1.3rem;
+  text-shadow: 0 0 15px rgba(245,215,110,0.3);
+}
+.modal .final-score {
+  font-size: 2.8rem;
+  color: #fff;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
 .modal input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #4fc3f7;
-  border-radius: 8px;
-  background: #0f3460;
+  border: 2px solid rgba(79,195,247,0.4);
+  border-radius: 10px;
+  background: rgba(15,52,96,0.6);
   color: #fff;
   font-size: 1rem;
   text-align: center;
   margin-bottom: 12px;
   outline: none;
+  transition: border-color 0.2s;
 }
+.modal input:focus { border-color: #4fc3f7; box-shadow: 0 0 15px rgba(79,195,247,0.2); }
 .modal input::placeholder { color: #556; }
 .modal button {
   width: 100%;
-  padding: 12px;
-  background: #4fc3f7;
+  padding: 13px;
+  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
   color: #1a1a2e;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
 }
-.modal button:hover { background: #29b6f6; }
+.modal button:hover {
+  background: linear-gradient(135deg, #29b6f6, #0288d1);
+  box-shadow: 0 4px 20px rgba(79,195,247,0.5);
+}
 
 /* Таблица лидеров */
 .leaderboard {
-  margin-top: 24px;
+  margin-top: 28px;
   width: 100%;
-  max-width: 340px;
+  max-width: 360px;
+  background: linear-gradient(145deg, rgba(22,33,62,0.5), rgba(15,52,96,0.3));
+  border: 1px solid rgba(79,195,247,0.15);
+  border-radius: 16px;
+  padding: 20px 16px;
 }
 .leaderboard h3 {
   text-align: center;
   color: #f5d76e;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
   font-size: 1.1rem;
+  text-shadow: 0 0 10px rgba(245,215,110,0.2);
+  letter-spacing: 1px;
 }
 .lb-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 3px;
 }
 .lb-table th {
-  background: #0f3460;
+  background: rgba(15,52,96,0.6);
   padding: 8px 10px;
-  font-size: 0.85rem;
-  color: #8899aa;
+  font-size: 0.8rem;
+  color: #6688aa;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid rgba(79,195,247,0.1);
 }
+.lb-table th:first-child { border-radius: 8px 0 0 8px; }
+.lb-table th:last-child { border-radius: 0 8px 8px 0; }
 .lb-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #1a1a3e;
+  padding: 9px 10px;
   font-size: 0.95rem;
+  background: rgba(22,33,62,0.3);
 }
-.lb-table .rank { text-align: center; width: 36px; }
+.lb-table td:first-child { border-radius: 6px 0 0 6px; }
+.lb-table td:last-child { border-radius: 0 6px 6px 0; }
+.lb-table .rank { text-align: center; width: 40px; }
 .lb-table .pts { text-align: right; font-weight: 700; color: #4fc3f7; }
 
-/* 1 место — золото */
+/* 1 место */
 .lb-table tr.top-1 td {
   color: #ffd700;
   font-weight: 700;
   font-size: 1.05rem;
-  background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,0,0.06));
-  border-top: 2px solid #ffd700;
-  border-bottom: 2px solid #ffd700;
+  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,180,0,0.05));
+  border-top: 1px solid rgba(255,215,0,0.4);
+  border-bottom: 1px solid rgba(255,215,0,0.4);
   text-shadow: 0 0 8px rgba(255,215,0,0.3);
 }
-.lb-table tr.top-1 td:first-child { border-left: 2px solid #ffd700; border-radius: 8px 0 0 8px; }
-.lb-table tr.top-1 td:last-child { border-right: 2px solid #ffd700; border-radius: 0 8px 8px 0; }
+.lb-table tr.top-1 td:first-child { border-left: 1px solid rgba(255,215,0,0.4); border-radius: 8px 0 0 8px; }
+.lb-table tr.top-1 td:last-child { border-right: 1px solid rgba(255,215,0,0.4); border-radius: 0 8px 8px 0; }
 .lb-table tr.top-1 .pts { color: #ffd700; }
-.lb-table tr.top-1 .rank::before { content: ''; }
 
-/* 2 место — серебро */
+/* 2 место */
 .lb-table tr.top-2 td {
-  color: #c0c0c0;
+  color: #d0d0d0;
   font-weight: 600;
   background: rgba(192,192,192,0.06);
-  border-bottom: 1px solid rgba(192,192,192,0.3);
 }
 .lb-table tr.top-2 .pts { color: #c0c0c0; }
 
-/* 3 место — бронза */
+/* 3 место */
 .lb-table tr.top-3 td {
   color: #cd7f32;
   font-weight: 600;
   background: rgba(205,127,50,0.06);
-  border-bottom: 1px solid rgba(205,127,50,0.3);
 }
 .lb-table tr.top-3 .pts { color: #cd7f32; }
 .lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
@@ -192,15 +260,16 @@ canvas {
 /* Выбор скина */
 .skins-toggle {
   margin-top: 12px;
-  background: none;
-  border: 1px solid #4fc3f7;
+  background: rgba(79,195,247,0.08);
+  border: 1px solid rgba(79,195,247,0.4);
   color: #4fc3f7;
-  border-radius: 8px;
-  padding: 8px 20px;
+  border-radius: 10px;
+  padding: 8px 22px;
   font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s;
 }
-.skins-toggle:hover { background: rgba(79,195,247,0.1); }
+.skins-toggle:hover { background: rgba(79,195,247,0.15); box-shadow: 0 0 15px rgba(79,195,247,0.15); }
 .skins-panel {
   display: none;
   margin-top: 10px;
@@ -213,22 +282,27 @@ canvas {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 10px;
-  border: 2px solid #1a1a3e;
-  border-radius: 10px;
-  background: #16213e;
+  padding: 10px 12px;
+  border: 2px solid rgba(26,26,62,0.8);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #1a2744, #16213e);
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.15s;
-  width: 68px;
+  transition: all 0.2s ease;
+  width: 72px;
 }
-.skin-card:hover { transform: scale(1.05); }
-.skin-card.active { border-color: #4fc3f7; box-shadow: 0 0 10px rgba(79,195,247,0.3); }
+.skin-card:hover { transform: scale(1.08); border-color: rgba(79,195,247,0.3); }
+.skin-card.active {
+  border-color: #4fc3f7;
+  box-shadow: 0 0 15px rgba(79,195,247,0.3);
+  background: linear-gradient(145deg, #1e2f52, #16213e);
+}
 .skin-preview { display: flex; gap: 2px; }
 .skin-preview span {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 3px;
   display: block;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
 }
 .skin-label { font-size: 0.7rem; color: #8899aa; text-align: center; }
 .modal .name-error {
@@ -236,9 +310,18 @@ canvas {
   font-size: 0.85rem;
   margin-bottom: 10px;
   display: none;
+  text-shadow: 0 0 10px rgba(255,107,107,0.3);
 }
 .modal .name-error.show {
   display: block;
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
 }
 </style>
 <script src="badwords.js"></script>
@@ -354,25 +437,32 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(COLS * CELL, y * CELL); ctx.stroke();
   }
 
-  // Еда
+  // Еда — свечение
+  ctx.shadowColor = '#f5d76e';
+  ctx.shadowBlur = 12;
   ctx.fillStyle = '#f5d76e';
   ctx.beginPath();
   ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
 
   // Змейка
   const skin = SKINS[currentSkin];
   snake.forEach((seg, i) => {
     if (i === 0) {
       ctx.fillStyle = skin.head;
+      ctx.shadowColor = skin.head;
+      ctx.shadowBlur = 8;
     } else {
       const colors = skin.body;
       ctx.fillStyle = colors[(i - 1) % colors.length];
+      ctx.shadowBlur = 0;
     }
     ctx.beginPath();
     ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
     ctx.fill();
   });
+  ctx.shadowBlur = 0;
 }
 
 function updateScore() {
@@ -453,7 +543,7 @@ document.getElementById('player-name').addEventListener('keydown', e => {
 });
 
 function normalizeName(str) {
-  // Латиница → кириллица (похожие буквы)
+  // Латиница -> кириллица (похожие буквы)
   const lat2cyr = {a:'а',b:'б',c:'с',e:'е',h:'н',k:'к',m:'м',o:'о',p:'р',t:'т',x:'х',y:'у',i:'и',u:'у',d:'д',n:'н',r:'р',l:'л',w:'ш',v:'в',g:'г',z:'з',f:'ф',j:'й',q:'к'};
   let s = str.toLowerCase();
   // Удаляем спецсимволы, цифры, пробелы — оставляем только буквы
@@ -502,12 +592,12 @@ function renderLeaderboard() {
     .then(r => r.json())
     .then(lb => {
       if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
-      const medals = ['', '', ''];
+      const medals = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
       let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
       lb.forEach((r, i) => {
         const cls = i < 3 ? ` class="top-${i + 1}"` : '';
-        const medal = medals[i] || '';
-        html += `<tr${cls}><td class="rank">${medal || (i + 1)}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+        const rank = medals[i] || (i + 1);
+        html += `<tr${cls}><td class="rank">${rank}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
       });
       html += '</table>';
       el.innerHTML = html;
