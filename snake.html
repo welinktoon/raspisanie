@@ -452,6 +452,17 @@ document.getElementById('player-name').addEventListener('keydown', e => {
   if (e.key === 'Enter') saveResult();
 });
 
+function normalizeName(str) {
+  // Латиница → кириллица (похожие буквы)
+  const lat2cyr = {a:'а',b:'б',c:'с',e:'е',h:'н',k:'к',m:'м',o:'о',p:'р',t:'т',x:'х',y:'у',i:'и',u:'у',d:'д',n:'н',r:'р',l:'л',w:'ш',v:'в',g:'г',z:'з',f:'ф',j:'й',q:'к'};
+  let s = str.toLowerCase();
+  // Удаляем спецсимволы, цифры, пробелы — оставляем только буквы
+  s = s.replace(/[^a-zа-яёa-zа-яё]/gi, '');
+  // Заменяем латинские на кириллицу
+  s = s.split('').map(c => lat2cyr[c] || c).join('');
+  return s;
+}
+
 function saveResult() {
   const input = document.getElementById('player-name');
   const errorEl = document.getElementById('name-error');
@@ -459,8 +470,13 @@ function saveResult() {
 
   // Проверка на мат/оскорбления
   if (name !== 'Аноним') {
+    const normalized = normalizeName(name);
     const lower = name.toLowerCase();
-    const found = window.BADWORDS.find(w => lower.includes(w));
+    // Проверяем и оригинал, и нормализованную версию
+    const found = window.BADWORDS.find(w => {
+      const nw = normalizeName(w);
+      return lower.includes(w) || normalized.includes(nw);
+    });
     if (found) {
       errorEl.textContent = 'Сам ты "' + found + '"! Введи нормальное имя.';
       errorEl.classList.add('show');
