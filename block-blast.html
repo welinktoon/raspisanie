@@ -76,8 +76,8 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 .piece-container.dragging { opacity: 0.3; transform: scale(0.9); }
 .piece-container.impossible { opacity: 0.3; }
 .piece-cell {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 3px;
 }
 .piece-cell.filled { border: 1px solid rgba(255,255,255,0.15); }
@@ -228,12 +228,6 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   80% { transform: translateX(5px); }
 }
 
-.game-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
 .game-layout {
   display: flex;
   flex-direction: column;
@@ -654,7 +648,8 @@ function onDrag(e) {
   e.preventDefault();
   const pos = getPos(e);
   dragPreview.style.left = (pos.x - dragPreview.offsetWidth / 2) + 'px';
-  dragPreview.style.top = (pos.y - dragPreview.offsetHeight - 40) + 'px';
+  const touchOffset = ('ontouchstart' in window) ? 70 : 40;
+  dragPreview.style.top = (pos.y - dragPreview.offsetHeight - touchOffset) + 'px';
 
   clearPreview();
   // Calculate board cell from cursor position offset upward by half piece height
