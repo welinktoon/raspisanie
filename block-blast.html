@@ -69,6 +69,9 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   display: grid;
   gap: 2px;
 }
+@media (pointer: coarse) {
+  .piece-container { padding: 14px; }
+}
 .piece-container:hover { border-color: rgba(79,195,247,0.3); }
 .piece-container.dragging { opacity: 0.3; transform: scale(0.9); }
 .piece-container.impossible { opacity: 0.3; }
@@ -448,7 +451,8 @@ function renderPieces() {
     const cols = p.shape[0].length;
     const container = document.createElement('div');
     container.className = 'piece-container';
-    const pieceSize = window.innerWidth >= 800 ? 36 : 28;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const pieceSize = window.innerWidth >= 800 ? 36 : isTouch ? 34 : 28;
     container.style.gridTemplateColumns = `repeat(${cols}, ${pieceSize}px)`;
     container.dataset.idx = idx;
 
