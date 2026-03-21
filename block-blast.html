@@ -95,18 +95,42 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 }
 #drag-preview .piece-cell { border-radius: 3px; }
 
+#board-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
 #start-btn {
-  margin-top: 16px;
-  padding: 14px 40px;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 16px 48px;
   background: #4fc3f7;
   color: #1a1a2e;
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
   font-weight: 700;
   cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 #start-btn:hover { background: #29b6f6; }
+#quit-btn {
+  display: none;
+  position: absolute;
+  top: 8px; right: 8px;
+  z-index: 10;
+  background: rgba(0,0,0,0.55);
+  color: #ff6b6b;
+  border: 1px solid rgba(255,107,107,0.4);
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+#quit-btn:hover { background: rgba(255,80,80,0.2); }
+body.playing #quit-btn { display: block; }
 
 .overlay {
   display: none;
@@ -242,18 +266,19 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 #leaderboard-desktop { display: none; }
 
 @media (min-width: 800px) {
-  #board { width: 500px; max-width: 500px; }
+  #board { width: 600px; max-width: 600px; }
+  #board-wrapper { max-width: 600px; }
   .piece-cell { width: 36px; height: 36px; }
   .piece-container { gap: 3px; }
-  #pieces-area { gap: 24px; min-height: 150px; width: 500px; justify-content: center; }
+  #pieces-area { gap: 24px; min-height: 150px; width: 600px; justify-content: center; }
   .game-layout {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
     gap: 40px;
-    max-width: 950px;
+    max-width: 1060px;
   }
-  .game-col { width: 500px; flex-shrink: 0; }
+  .game-col { width: 600px; flex-shrink: 0; }
   .side-col {
     display: block;
     min-width: 240px;
@@ -264,7 +289,6 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   .leaderboard.mobile-only { display: none; }
   h1 { font-size: 1.8rem; }
   #score-display { font-size: 1.2rem; margin-bottom: 12px; }
-  #start-btn { margin-top: 12px; }
 }
 
 /* ── Игровой режим: скрыть лишнее и заблокировать скролл ── */
@@ -378,9 +402,12 @@ body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
 
 <div class="game-layout">
   <div class="game-col">
-    <div id="board"></div>
+    <div id="board-wrapper">
+      <div id="board"></div>
+      <button id="start-btn">Играть</button>
+      <button id="quit-btn" onclick="quit()">✕ Завершить</button>
+    </div>
     <div id="pieces-area"></div>
-    <button id="start-btn">Играть</button>
   </div>
   <div class="side-col">
     <div class="leaderboard" id="leaderboard-desktop"></div>
@@ -443,6 +470,8 @@ const SHAPES = [
   [[1,1],[1,0],[1,0]],
 ];
 
+let isQuitting = false;
+
 // Веса: обычные=3, тяжёлые (1×5, 5×1)=1, убийца (3×3)=1
 const SHAPE_WEIGHTS = [
   3,3,3,3,3,3, // 0-5
@@ -475,6 +504,9 @@ function init() {
   score = 0;
   document.body.classList.remove('theme-neon', 'theme-cosmic', 'theme-hell');
   document.body.classList.add('playing');
+  document.getElementById('gameover-overlay').classList.remove('show');
+  document.getElementById('player-name').style.display = '';
+  document.getElementById('save-btn').style.display = '';
   updateScore();
   renderBoard();
   pieces = generateThreePieces();
@@ -684,13 +716,24 @@ function checkGameOver() {
   }
 }
 
+function quit() {
+  isQuitting = true;
+  gameOver();
+}
+
 function gameOver() {
   running = false;
   document.body.classList.remove('playing');
   document.getElementById('final-score').textContent = score;
   document.getElementById('gameover-overlay').classList.add('show');
-  document.getElementById('player-name').focus();
   document.getElementById('start-btn').style.display = 'block';
+  if (isQuitting) {
+    isQuitting = false;
+    document.getElementById('player-name').style.display = 'none';
+    document.getElementById('save-btn').style.display = 'none';
+  } else {
+    document.getElementById('player-name').focus();
+  }
 }
 
 // --- Drag & Drop ---
