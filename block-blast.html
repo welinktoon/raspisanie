@@ -231,32 +231,38 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   align-items: center;
   width: 100%;
 }
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 .game-col { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .side-col { display: none; }
-#leaderboard-desktop .leaderboard { margin-top: 0; }
 
 @media (min-width: 800px) {
-  #board { max-width: 420px; }
-  .piece-cell { width: 36px; height: 36px; }
-  .piece-container { gap: 3px; }
-  #pieces-area { gap: 24px; min-height: 140px; }
+  #board { width: 380px; max-width: 380px; }
+  .piece-cell { width: 32px; height: 32px; }
+  .piece-container { gap: 2px; }
+  #pieces-area { gap: 20px; min-height: 130px; width: 380px; justify-content: center; }
   .game-layout {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
     gap: 40px;
-    max-width: 900px;
+    max-width: 800px;
   }
-  .game-col { max-width: 420px; }
+  .game-col { width: 380px; flex-shrink: 0; }
   .side-col {
     display: block;
-    min-width: 260px;
-    max-width: 320px;
+    min-width: 240px;
+    max-width: 300px;
     padding-top: 8px;
   }
   .leaderboard.mobile-only { display: none; }
   h1 { font-size: 1.8rem; }
   #score-display { font-size: 1.2rem; margin-bottom: 12px; }
+  #start-btn { margin-top: 12px; }
 }
 
 #combo-popup {
@@ -412,7 +418,7 @@ function renderPieces() {
     const cols = p.shape[0].length;
     const container = document.createElement('div');
     container.className = 'piece-container';
-    const pieceSize = window.innerWidth >= 800 ? 36 : 28;
+    const pieceSize = window.innerWidth >= 800 ? 32 : 28;
     container.style.gridTemplateColumns = `repeat(${cols}, ${pieceSize}px)`;
     container.dataset.idx = idx;
 
