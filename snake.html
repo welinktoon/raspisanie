@@ -414,6 +414,17 @@ canvas {
   .game-wrapper { display: contents; }
   .game-col { display: contents; }
   .kb-hint { display: none; }
+  #controls { display: none !important; }
+  .swipe-hint {
+    display: block;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+}
+@media (min-width: 768px) {
+  .swipe-hint { display: none; }
 }
 </style>
 <script src="badwords.js"></script>
@@ -441,6 +452,7 @@ canvas {
     </div>
 
     <div class="kb-hint">WASD / стрелки для управления</div>
+    <div class="swipe-hint">свайп для управления</div>
   </div>
 
   <div class="lb-col">
@@ -710,11 +722,29 @@ function setDir(d) {
   if (d !== opposite[last] && d !== last && dirQueue.length < 3) dirQueue.push(d);
 }
 
-// Кнопки управления
+// Кнопки управления (оставляем для совместимости, на мобиле скрыты)
 document.querySelectorAll('.ctrl-btn').forEach(btn => {
   btn.addEventListener('touchstart', e => { e.preventDefault(); setDir(btn.dataset.dir); });
   btn.addEventListener('mousedown', e => { e.preventDefault(); setDir(btn.dataset.dir); });
 });
+
+// Свайп по всему экрану
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!running) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return; // тап, не свайп
+  if (Math.abs(dx) > Math.abs(dy)) {
+    setDir(dx > 0 ? 'right' : 'left');
+  } else {
+    setDir(dy > 0 ? 'down' : 'up');
+  }
+}, { passive: true });
 
 // Клавиатура
 document.addEventListener('keydown', e => {
@@ -728,7 +758,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   init();
   running = true;
   document.getElementById('start-btn').style.display = 'none';
-  document.getElementById('controls').style.display = 'grid';
+  if (isDesktop) document.getElementById('controls').style.display = 'none'; // на мобиле управление свайпом
   clearInterval(gameInterval);
   gameInterval = setInterval(step, 230);
 });
