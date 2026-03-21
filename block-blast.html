@@ -239,6 +239,7 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 }
 .game-col { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .side-col { display: none; }
+#leaderboard-desktop { display: none; }
 
 @media (min-width: 800px) {
   #board { width: 500px; max-width: 500px; }
@@ -259,6 +260,7 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
     max-width: 300px;
     padding-top: 8px;
   }
+  #leaderboard-desktop { display: block; }
   .leaderboard.mobile-only { display: none; }
   h1 { font-size: 1.8rem; }
   #score-display { font-size: 1.2rem; margin-bottom: 12px; }
@@ -316,7 +318,6 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 </div>
 
 <div class="leaderboard mobile-only">
-  <h3>Таблица лидеров</h3>
   <div id="lb-body"></div>
 </div>
 
