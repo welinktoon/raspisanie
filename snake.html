@@ -323,6 +323,65 @@ canvas {
   60% { transform: translateX(-5px); }
   80% { transform: translateX(5px); }
 }
+
+/* Десктоп */
+@media (min-width: 768px) {
+  body { padding: 20px 40px; }
+  .game-wrapper {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 8px;
+  }
+  .game-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 { font-size: 2rem; margin-bottom: 6px; }
+  #score-display { font-size: 1.3rem; margin-bottom: 12px; }
+  canvas { max-width: none; }
+  .controls { display: none !important; }
+  #start-btn {
+    padding: 16px 52px;
+    font-size: 1.2rem;
+    border-radius: 14px;
+  }
+  .skins-toggle { font-size: 0.95rem; padding: 9px 24px; }
+  .skins-panel { max-width: 400px; }
+  .leaderboard {
+    max-width: 380px;
+    min-width: 320px;
+    margin-top: 0;
+  }
+  .leaderboard h3 { font-size: 1.2rem; }
+  .lb-table td { font-size: 1rem; padding: 10px 12px; }
+  .lb-table th { font-size: 0.85rem; padding: 9px 12px; }
+  .modal { max-width: 380px; padding: 36px 32px; }
+  .modal h2 { font-size: 1.5rem; }
+  .modal .final-score { font-size: 3.2rem; }
+  .modal input { padding: 14px; font-size: 1.05rem; }
+  .modal button { padding: 14px; font-size: 1.05rem; }
+  .kb-hint {
+    display: block;
+    margin-top: 12px;
+    color: #556;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+}
+@media (max-width: 767px) {
+  .game-wrapper {
+    display: contents;
+  }
+  .game-col {
+    display: contents;
+  }
+  .kb-hint { display: none; }
+}
 </style>
 <script src="badwords.js"></script>
 </head>
@@ -332,18 +391,29 @@ canvas {
 <h1>Змейка</h1>
 <div id="score-display">Очки: 0</div>
 
-<canvas id="game"></canvas>
+<div class="game-wrapper">
+  <div class="game-col">
+    <canvas id="game"></canvas>
 
-<button id="start-btn">Играть</button>
+    <button id="start-btn">Играть</button>
 
-<button class="skins-toggle" id="skins-toggle">Расцветка</button>
-<div class="skins-panel" id="skins-panel"></div>
+    <button class="skins-toggle" id="skins-toggle">Расцветка</button>
+    <div class="skins-panel" id="skins-panel"></div>
 
-<div class="controls" id="controls" style="display:none;">
-  <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
-  <div class="ctrl-btn ctrl-left" data-dir="left">&#9664;</div>
-  <div class="ctrl-btn ctrl-down" data-dir="down">&#9660;</div>
-  <div class="ctrl-btn ctrl-right" data-dir="right">&#9654;</div>
+    <div class="controls" id="controls" style="display:none;">
+      <div class="ctrl-btn ctrl-up" data-dir="up">&#9650;</div>
+      <div class="ctrl-btn ctrl-left" data-dir="left">&#9664;</div>
+      <div class="ctrl-btn ctrl-down" data-dir="down">&#9660;</div>
+      <div class="ctrl-btn ctrl-right" data-dir="right">&#9654;</div>
+    </div>
+
+    <div class="kb-hint">WASD / стрелки для управления</div>
+  </div>
+
+  <div class="leaderboard">
+    <h3>Таблица лидеров</h3>
+    <div id="lb-body"></div>
+  </div>
 </div>
 
 <div class="overlay" id="gameover-overlay">
@@ -354,11 +424,6 @@ canvas {
     <div class="name-error" id="name-error"></div>
     <button id="save-btn">Сохранить результат</button>
   </div>
-</div>
-
-<div class="leaderboard">
-  <h3>Таблица лидеров</h3>
-  <div id="lb-body"></div>
 </div>
 
 <script>
