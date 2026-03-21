@@ -267,10 +267,15 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   #start-btn { margin-top: 12px; }
 }
 
-/* ── Игровой режим: скрыть лишнее ── */
+/* ── Игровой режим: скрыть лишнее и заблокировать скролл ── */
 body.playing .back { display: none; }
 body.playing .leaderboard { display: none; }
 body.playing #start-btn { display: none !important; }
+body.playing {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
 
 /* ── Тема: Неон (501–1000) ── */
 @keyframes neonPulse {
