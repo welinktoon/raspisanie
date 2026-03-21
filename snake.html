@@ -462,7 +462,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
 
-let snake, dir, nextDir, food, score, gameInterval, running;
+let snake, dir, dirQueue, food, score, gameInterval, running;
 let bonusFood = null, eatenCount = 0, bonusTimeout = null, bonusFoodSpawnTime = 0;
 let darkFood = null, darkTimeout = null, darkFoodSpawnTime = 0;
 let currentSpeed = 230;
@@ -476,7 +476,7 @@ function init() {
     { x: midX - 2, y: midY }
   ];
   dir = 'right';
-  nextDir = 'right';
+  dirQueue = [];
   score = 0;
   eatenCount = 0;
   currentSpeed = 230;
@@ -616,7 +616,7 @@ function updateScore() {
 }
 
 function step() {
-  dir = nextDir;
+  if (dirQueue.length > 0) dir = dirQueue.shift();
   const head = { ...snake[0] };
 
   if (dir === 'up') head.y--;
@@ -676,7 +676,8 @@ function gameOver() {
 function setDir(d) {
   if (!running) return;
   const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
-  if (d !== opposite[dir]) nextDir = d;
+  const last = dirQueue.length > 0 ? dirQueue[dirQueue.length - 1] : dir;
+  if (d !== opposite[last] && d !== last && dirQueue.length < 3) dirQueue.push(d);
 }
 
 // Кнопки управления
