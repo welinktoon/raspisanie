@@ -807,11 +807,14 @@ function saveResult() {
   errorEl.classList.remove('show');
   document.getElementById('gameover-overlay').classList.remove('show');
   input.value = '';
+  const qualifies = currentLb.length < 10 || score >= currentLb[Math.min(currentLb.length, 10) - 1].score;
   fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({ name, score }),
-  }).then(() => renderLeaderboard()).catch(() => renderLeaderboard());
+  }).then(() => { if (qualifies) renderLeaderboard(); }).catch(() => {});
 }
+
+let currentLb = [];
 
 function renderLeaderboard() {
   const el = document.getElementById('lb-body');
@@ -819,10 +822,11 @@ function renderLeaderboard() {
   fetch(API_URL)
     .then(r => r.json())
     .then(lb => {
+      currentLb = lb.slice(0, 10);
       if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
       const medals = ['\u{1F451}', '\u{1F948}', '\u{1F949}'];
       let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
-      lb.slice(0, 10).forEach((r, i) => {
+      currentLb.forEach((r, i) => {
         const cls = i < 3 ? ` class="top-${i + 1}"` : '';
         const rank = medals[i] || (i + 1);
         html += `<tr${cls}><td class="rank">${rank}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
