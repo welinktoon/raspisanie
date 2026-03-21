@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка — ДЗ</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 16px 16px 40px;
+}
+
+/* ── Nav ── */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+nav a {
+  padding: 8px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #8899aa;
+  background: #16213e;
+  transition: background 0.15s;
+}
+nav a.active { background: #4fc3f7; color: #1a1a2e; }
+
+/* ── Auth ── */
+#auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+#auth-card {
+  background: #16213e;
+  border-radius: 14px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#auth-card h2 { color: #fff; font-size: 1.2rem; text-align: center; }
+#auth-error { min-height: 18px; font-size: 0.85rem; color: #ef9a9a; text-align: center; }
+.shake { animation: shake 0.35s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60%  { transform: translateX(-7px); }
+  40%,80%  { transform: translateX(7px); }
+}
+
+/* ── Inputs ── */
+input[type=password], input[type=date], input[type=text],
+textarea, select {
+  background: #0f1729;
+  border: 1px solid #2a3a5a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus { border-color: #4fc3f7; }
+select option { background: #16213e; }
+textarea { resize: vertical; }
+
+/* ── Buttons ── */
+.btn {
+  background: #4fc3f7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+.btn:hover { background: #29b6f6; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-sm {
+  background: transparent;
+  border: 1px solid #ef5350;
+  color: #ef5350;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-sm:hover { background: #ef5350; color: #fff; }
+.btn-logout {
+  background: transparent;
+  border: 1px solid #2a3a5a;
+  color: #8899aa;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.btn-logout:hover { border-color: #8899aa; color: #e0e0e0; }
+
+/* ── Panel ── */
+#panel { display: none; max-width: 640px; margin: 0 auto; }
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.panel-top h1 { color: #fff; font-size: 1.4rem; }
+
+/* ── Add card ── */
+.add-card {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+.add-card h2 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; }
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6dbfb8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+.dates-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#save-status { text-align: center; font-size: 0.85rem; color: #6dbfb8; min-height: 22px; margin-top: 6px; }
+
+/* ── HW list ── */
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6dbfb8;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.day-group { margin-bottom: 20px; }
+.day-group-hdr {
+  font-size: 0.85rem;
+  color: #8899aa;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1a1a3e;
+}
+.hw-row {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hw-row-info { flex: 1; min-width: 0; }
+.hw-row-subject { font-weight: 700; color: #fff; font-size: 0.92rem; margin-bottom: 3px; }
+.hw-row-text { font-size: 0.85rem; color: #b0b8c8; line-height: 1.4; }
+.hw-row-meta { font-size: 0.73rem; color: #556677; margin-top: 4px; }
+.list-empty { text-align: center; color: #3a4a5a; font-style: italic; padding: 30px; font-size: 0.9rem; }
+#past-wrap { text-align: center; margin-top: 16px; }
+#past-wrap label { font-size: 0.85rem; color: #8899aa; cursor: pointer; gap: 6px; display: inline-flex; align-items: center; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Расписание</a>
+  <a href="admin.html" class="active">Админка</a>
+</nav>
+
+<!-- Auth -->
+<div id="auth-screen">
+  <div id="auth-card">
+    <h2>Вход в админку</h2>
+    <div id="auth-error"></div>
+    <input type="password" id="pwd" placeholder="Пароль" autocomplete="current-password">
+    <button class="btn" onclick="tryLogin()">Войти</button>
+  </div>
+</div>
+
+<!-- Panel -->
+<div id="panel">
+  <div class="panel-top">
+    <h1>Домашние задания</h1>
+    <button class="btn-logout" onclick="logout()">Выйти</button>
+  </div>
+
+  <div class="add-card">
+    <h2>Новое задание</h2>
+    <div class="form-group">
+      <label>Предмет</label>
+      <select id="f-subject" onchange="onSubjectChange()">
+        <option value="">— выбрать —</option>
+        <option>МГ</option><option>ФКХ</option><option>ПАТ</option>
+        <option>МФА</option><option>ГИГ</option><option>МБХ</option>
+        <option>БОТ</option><option>ХПФ</option><option>ПДвФ</option>
+        <option>ОФХ</option><option>ФР</option><option>ФКС</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Задание</label>
+      <textarea id="f-text" rows="3" placeholder="Текст задания"></textarea>
+    </div>
+    <div class="dates-row">
+      <div class="form-group">
+        <label>Дата пары</label>
+        <input type="date" id="f-lesson-date">
+      </div>
+      <div class="form-group">
+        <label>Дедлайн</label>
+        <input type="date" id="f-deadline">
+      </div>
+    </div>
+    <button class="btn" id="add-btn" onclick="addHw()">Добавить</button>
+    <div id="save-status"></div>
+  </div>
+
+  <div class="section-label">Активные задания</div>
+  <div id="hw-list"><div class="list-empty">Загрузка...</div></div>
+  <div id="past-wrap">
+    <label>
+      <input type="checkbox" id="show-past" onchange="renderList()">
+      Показать прошедшие
+    </label>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwuSrAb4aoI79yMefk-bOemFjprKlbZd1yP7f1KgDr3Clc0aUTvjPEXDA1WTojnig9bdQ/exec';
+const PWD_HASH   = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+
+const SUBJECT_WD = {
+  'МФА':1,'ГИГ':1,'ФКХ':2,'БОТ':2,
+  'ОФХ':3,'ПАТ':3,'ФКС':3,
+  'ФР':4,'ХПФ':4,'ПДвФ':4,'МБХ':5,'МГ':5
+};
+const WD_NAMES = ['вс','пн','вт','ср','чт','пт','сб'];
+let allHw = [];
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function tryLogin() {
+  const hash = await sha256(document.getElementById('pwd').value);
+  if (hash === PWD_HASH) {
+    sessionStorage.setItem('admin_ok', '1');
+    showPanel();
+  } else {
+    const card = document.getElementById('auth-card');
+    document.getElementById('auth-error').textContent = 'Неверный пароль';
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+  }
+}
+document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+function logout() { sessionStorage.removeItem('admin_ok'); location.reload(); }
+function showPanel() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  loadHw();
+}
+if (sessionStorage.getItem('admin_ok') === '1') showPanel();
+
+function toISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function parseToISO(str) {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? str : toISO(d);
+}
+function fmtISO(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return String(d.getDate()).padStart(2,'0') + '.' +
+    String(d.getMonth()+1).padStart(2,'0') + '.' +
+    d.getFullYear() + ' (' + WD_NAMES[d.getDay()] + ')';
+}
+function getNextDate(subject) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const targetWd = SUBJECT_WD[subject];
+  if (targetWd === undefined) return today;
+  const d = new Date(today);
+  let ahead = targetWd - d.getDay();
+  if (ahead < 0) ahead += 7;
+  d.setDate(d.getDate() + ahead);
+  return d;
+}
+function onSubjectChange() {
+  const sub = document.getElementById('f-subject').value;
+  if (!sub) return;
+  const iso = toISO(getNextDate(sub));
+  document.getElementById('f-lesson-date').value = iso;
+  document.getElementById('f-deadline').value = iso;
+}
+
+async function loadHw() {
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=list');
+    const json = await res.json();
+    allHw = (json.data || []).map(h => ({
+      ...h,
+      lesson_date: parseToISO(h.lesson_date),
+      deadline:    parseToISO(h.deadline),
+      created_at:  parseToISO(h.created_at),
+    }));
+    renderList();
+  } catch (e) {
+    document.getElementById('hw-list').innerHTML =
+      `<div class="list-empty" style="color:#ef9a9a">Ошибка загрузки: ${e.message}</div>`;
+  }
+}
+
+async function addHw() {
+  const subject     = document.getElementById('f-subject').value;
+  const text        = document.getElementById('f-text').value.trim();
+  const lesson_date = document.getElementById('f-lesson-date').value;
+  const deadline    = document.getElementById('f-deadline').value;
+  if (!subject || !text || !lesson_date || !deadline) { setStatus('Заполни все поля','#ef9a9a'); return; }
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true; setStatus('Сохранение...');
+  try {
+    const url = SCRIPT_URL + '?action=add' +
+      '&subject=' + encodeURIComponent(subject) +
+      '&text=' + encodeURIComponent(text) +
+      '&lesson_date=' + encodeURIComponent(lesson_date) +
+      '&deadline=' + encodeURIComponent(deadline);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'ошибка');
+    setStatus('Сохранено','#6dbfb8');
+    ['f-subject','f-text','f-lesson-date','f-deadline'].forEach(id => document.getElementById(id).value = '');
+    await loadHw();
+  } catch (e) {
+    setStatus('Ошибка: ' + e.message, '#ef9a9a');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteHw(id) {
+  if (!confirm('Удалить задание?')) return;
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id));
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    await loadHw();
+  } catch (e) { alert('Ошибка: ' + e.message); }
+}
+
+function setStatus(msg, color) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg; el.style.color = color || '#6dbfb8';
+  if (msg === 'Сохранено') setTimeout(() => { el.textContent = ''; }, 2000);
+}
+
+function renderList() {
+  const showPast = document.getElementById('show-past').checked;
+  const today    = toISO(new Date());
+  const hw       = showPast ? allHw : allHw.filter(h => h.deadline >= today);
+  const listEl   = document.getElementById('hw-list');
+  if (!hw.length) { listEl.innerHTML = '<div class="list-empty">Нет заданий</div>'; return; }
+  const byDate = {};
+  hw.forEach(h => { if (!byDate[h.deadline]) byDate[h.deadline] = []; byDate[h.deadline].push(h); });
+  listEl.innerHTML = '';
+  Object.keys(byDate).sort().forEach(date => {
+    const group = document.createElement('div');
+    group.className = 'day-group';
+    const hdr = document.createElement('div');
+    hdr.className = 'day-group-hdr';
+    hdr.textContent = fmtISO(date);
+    group.appendChild(hdr);
+    byDate[date].forEach(hw => {
+      const row = document.createElement('div');
+      row.className = 'hw-row';
+      row.innerHTML = `
+        <div class="hw-row-info">
+          <div class="hw-row-subject">${hw.subject}</div>
+          <div class="hw-row-text">${hw.text}</div>
+          <div class="hw-row-meta">пара: ${hw.lesson_date ? fmtISO(hw.lesson_date) : '—'}</div>
+        </div>
+        <button class="btn-sm" onclick="deleteHw('${hw.id}')">✕</button>`;
+      group.appendChild(row);
+    });
+    listEl.appendChild(group);
+  });
+}
+</script>
+</body>
+</html>
