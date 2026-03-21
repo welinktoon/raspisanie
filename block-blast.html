@@ -557,6 +557,16 @@ function checkAndClearLines() {
       const c = idx % SIZE;
       board[r][c] = null;
     });
+    if (dragPiece) {
+      dragPreview.style.display = 'none';
+      clearPreview();
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', onDrag);
+      document.removeEventListener('touchend', endDrag);
+      dragPiece = null;
+      dragIndex = -1;
+    }
     renderBoard();
     renderPieces();
   }, 400);
