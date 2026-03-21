@@ -6,445 +6,414 @@
 <title>Змейка</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:         #0d1117;
+  --surface:    #161b26;
+  --surface-2:  #1e2636;
+  --border:     #252f3e;
+  --accent:     #4fc3f7;
+  --text:       #dde3ec;
+  --text-muted: #5a6a82;
+  --gold:       #f0c040;
+  --silver:     #8fa3ba;
+  --bronze:     #b07840;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e);
-  color: #e0e0e0;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px;
+  padding: 16px;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
 }
-a { color: #4fc3f7; text-decoration: none; }
+
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.back { font-size: 0.9rem; margin-bottom: 8px; align-self: flex-start; }
+
+.back {
+  font-size: 0.82rem;
+  margin-bottom: 14px;
+  align-self: flex-start;
+  color: var(--text-muted);
+}
+
 h1 {
-  font-size: 1.6rem;
-  color: #fff;
-  margin-bottom: 4px;
-  text-shadow: 0 0 20px rgba(79,195,247,0.4);
-  letter-spacing: 2px;
-}
-#score-display {
-  font-size: 1.15rem;
-  color: #f5d76e;
-  margin-bottom: 10px;
+  font-size: 1.4rem;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(245,215,110,0.3);
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
+
+#score-display {
+  font-size: 0.95rem;
+  color: var(--gold);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
 canvas {
-  border: 2px solid rgba(79,195,247,0.6);
-  border-radius: 12px;
-  background: #0f3460;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0f1923;
   display: block;
   max-width: 100%;
-  box-shadow: 0 0 30px rgba(79,195,247,0.15), inset 0 0 60px rgba(0,0,0,0.3);
 }
+
+/* Controls */
 .controls {
   display: grid;
-  grid-template-areas:
-    ". up ."
-    "left down right";
-  grid-template-columns: 70px 70px 70px;
-  grid-template-rows: 70px 70px;
+  grid-template-areas: ". up ." "left down right";
+  grid-template-columns: 64px 64px 64px;
+  grid-template-rows: 64px 64px;
   gap: 6px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
+
 .ctrl-btn {
-  width: 70px;
-  height: 70px;
-  border: 2px solid rgba(79,195,247,0.5);
-  border-radius: 16px;
-  background: linear-gradient(145deg, #1a2744, #16213e);
-  color: #4fc3f7;
-  font-size: 1.8rem;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.15s ease;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: background 0.1s, color 0.1s, transform 0.08s;
 }
+
 .ctrl-btn:active {
-  background: linear-gradient(145deg, #4fc3f7, #29b6f6);
-  color: #1a1a2e;
-  transform: scale(0.93);
-  box-shadow: 0 0 20px rgba(79,195,247,0.4);
+  background: var(--accent);
+  color: var(--bg);
+  transform: scale(0.91);
 }
+
 .ctrl-up { grid-area: up; }
 .ctrl-down { grid-area: down; }
 .ctrl-left { grid-area: left; }
 .ctrl-right { grid-area: right; }
 
+/* Start button */
 #start-btn {
-  margin-top: 16px;
-  padding: 14px 44px;
-  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-  color: #1a1a2e;
+  margin-top: 14px;
+  padding: 11px 36px;
+  background: var(--accent);
+  color: var(--bg);
   border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(79,195,247,0.35);
-  transition: all 0.2s ease;
-  animation: pulse-btn 2s ease-in-out infinite;
-  letter-spacing: 1px;
+  transition: opacity 0.15s;
 }
-#start-btn:hover {
-  background: linear-gradient(135deg, #29b6f6, #0288d1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(79,195,247,0.5);
-}
-@keyframes pulse-btn {
-  0%, 100% { box-shadow: 0 4px 20px rgba(79,195,247,0.35); }
-  50% { box-shadow: 0 4px 30px rgba(79,195,247,0.6); }
-}
+#start-btn:hover { opacity: 0.82; }
 
-/* Модал GameOver */
+/* Overlay / Modal */
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 100;
   align-items: center;
   justify-content: center;
 }
 .overlay.show { display: flex; }
-.overlay.show .modal {
-  animation: modal-in 0.3s ease-out;
-}
+.overlay.show .modal { animation: modal-in 0.22s ease-out; }
+
 @keyframes modal-in {
-  from { opacity: 0; transform: scale(0.85) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
 .modal {
-  background: linear-gradient(145deg, rgba(22,33,62,0.95), rgba(15,52,96,0.9));
-  border: 1px solid rgba(79,195,247,0.4);
-  border-radius: 20px;
-  padding: 32px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
   text-align: center;
   max-width: 320px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(79,195,247,0.1);
 }
+
 .modal h2 {
-  color: #f5d76e;
+  color: var(--gold);
   margin-bottom: 4px;
-  font-size: 1.3rem;
-  text-shadow: 0 0 15px rgba(245,215,110,0.3);
+  font-size: 1.15rem;
+  font-weight: 700;
 }
+
 .modal .final-score {
-  font-size: 2.8rem;
-  color: #fff;
+  font-size: 3rem;
+  color: var(--text);
   font-weight: 800;
   margin-bottom: 20px;
-  text-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
+
 .modal input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid rgba(79,195,247,0.4);
-  border-radius: 10px;
-  background: rgba(15,52,96,0.6);
-  color: #fff;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
   font-size: 1rem;
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
 }
-.modal input:focus { border-color: #4fc3f7; box-shadow: 0 0 15px rgba(79,195,247,0.2); }
-.modal input::placeholder { color: #556; }
+.modal input:focus { border-color: var(--accent); }
+.modal input::placeholder { color: var(--text-muted); }
+
 .modal button {
   width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, #4fc3f7, #29b6f6);
-  color: #1a1a2e;
+  padding: 12px;
+  background: var(--accent);
+  color: var(--bg);
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(79,195,247,0.3);
+  transition: opacity 0.15s;
 }
-.modal button:hover {
-  background: linear-gradient(135deg, #29b6f6, #0288d1);
-  box-shadow: 0 4px 20px rgba(79,195,247,0.5);
+.modal button:hover { opacity: 0.82; }
+
+.modal .name-error {
+  color: #f87171;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
+  display: none;
+}
+.modal .name-error.show { display: block; animation: shake 0.35s ease; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
 }
 
-/* Таблица лидеров */
+/* Shared card */
+.leaderboard, .rules {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.leaderboard h3, .rules h3 {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+/* Leaderboard */
 .leaderboard {
-  margin-top: 28px;
+  margin-top: 20px;
   width: 100%;
   max-width: 360px;
-  background: linear-gradient(145deg, rgba(22,33,62,0.5), rgba(15,52,96,0.3));
-  border: 1px solid rgba(79,195,247,0.15);
-  border-radius: 16px;
-  padding: 20px 16px;
 }
-.leaderboard h3 {
-  text-align: center;
-  color: #f5d76e;
-  margin-bottom: 14px;
-  font-size: 1.1rem;
-  text-shadow: 0 0 10px rgba(245,215,110,0.2);
-  letter-spacing: 1px;
-}
+
 .lb-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 3px;
+  border-collapse: collapse;
 }
+
 .lb-table th {
-  background: rgba(15,52,96,0.6);
-  padding: 8px 10px;
-  font-size: 0.8rem;
-  color: #6688aa;
+  padding: 6px 10px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  border-bottom: 1px solid rgba(79,195,247,0.1);
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
 }
-.lb-table th:first-child { border-radius: 8px 0 0 8px; }
-.lb-table th:last-child { border-radius: 0 8px 8px 0; }
+.lb-table th.rank, .lb-table .rank { text-align: center; width: 36px; }
+.lb-table th.pts { text-align: right; }
+
 .lb-table td {
-  padding: 9px 10px;
-  font-size: 0.95rem;
-  background: rgba(22,33,62,0.3);
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text);
 }
-.lb-table td:first-child { border-radius: 6px 0 0 6px; }
-.lb-table td:last-child { border-radius: 0 6px 6px 0; }
-.lb-table .rank { text-align: center; width: 40px; }
-.lb-table .pts { text-align: right; font-weight: 700; color: #4fc3f7; }
+.lb-table tr:last-child td { border-bottom: none; }
+.lb-table .pts { text-align: right; font-weight: 600; color: var(--accent); }
 
-/* 1 место */
-.lb-table tr.top-1 td {
-  color: #ffd700;
-  font-weight: 700;
-  font-size: 1.05rem;
-  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,180,0,0.05));
-  border-top: 1px solid rgba(255,215,0,0.4);
-  border-bottom: 1px solid rgba(255,215,0,0.4);
-  text-shadow: 0 0 8px rgba(255,215,0,0.3);
+.lb-table tr.top-1 td { color: var(--gold); font-weight: 700; }
+.lb-table tr.top-1 .pts { color: var(--gold); }
+.lb-table tr.top-2 td { color: var(--silver); font-weight: 600; }
+.lb-table tr.top-2 .pts { color: var(--silver); }
+.lb-table tr.top-3 td { color: var(--bronze); font-weight: 600; }
+.lb-table tr.top-3 .pts { color: var(--bronze); }
+
+.lb-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 16px;
+  font-size: 0.85rem;
 }
-.lb-table tr.top-1 td:first-child { border-left: 1px solid rgba(255,215,0,0.4); border-radius: 8px 0 0 8px; }
-.lb-table tr.top-1 td:last-child { border-right: 1px solid rgba(255,215,0,0.4); border-radius: 0 8px 8px 0; }
-.lb-table tr.top-1 .pts { color: #ffd700; }
 
-/* 2 место */
-.lb-table tr.top-2 td {
-  color: #d0d0d0;
-  font-weight: 600;
-  background: rgba(192,192,192,0.06);
-}
-.lb-table tr.top-2 .pts { color: #c0c0c0; }
-
-/* 3 место */
-.lb-table tr.top-3 td {
-  color: #cd7f32;
-  font-weight: 600;
-  background: rgba(205,127,50,0.06);
-}
-.lb-table tr.top-3 .pts { color: #cd7f32; }
-.lb-empty { text-align: center; color: #556; font-style: italic; padding: 20px; }
-
-/* Выбор скина */
+/* Skins */
 .skins-toggle {
-  margin-top: 12px;
-  background: rgba(79,195,247,0.08);
-  border: 1px solid rgba(79,195,247,0.4);
-  color: #4fc3f7;
-  border-radius: 10px;
-  padding: 8px 22px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.skins-toggle:hover { background: rgba(79,195,247,0.15); box-shadow: 0 0 15px rgba(79,195,247,0.15); }
-.skins-panel {
-  display: none;
   margin-top: 10px;
-  width: 100%;
-  max-width: 320px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
-.skins-panel.open { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.skins-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+.skins-panel { display: none; margin-top: 10px; width: 100%; max-width: 320px; }
+.skins-panel.open { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
 .skin-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 10px 12px;
-  border: 2px solid rgba(26,26,62,0.8);
-  border-radius: 12px;
-  background: linear-gradient(145deg, #1a2744, #16213e);
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
   cursor: pointer;
-  transition: all 0.2s ease;
-  width: 72px;
+  transition: border-color 0.15s;
+  width: 66px;
 }
-.skin-card:hover { transform: scale(1.08); border-color: rgba(79,195,247,0.3); }
-.skin-card.active {
-  border-color: #4fc3f7;
-  box-shadow: 0 0 15px rgba(79,195,247,0.3);
-  background: linear-gradient(145deg, #1e2f52, #16213e);
-}
-.skin-preview { display: flex; gap: 2px; }
-.skin-preview span {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  display: block;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3);
-}
-.skin-label { font-size: 0.7rem; color: #8899aa; text-align: center; }
-.modal .name-error {
-  color: #ff6b6b;
-  font-size: 0.85rem;
-  margin-bottom: 10px;
-  display: none;
-  text-shadow: 0 0 10px rgba(255,107,107,0.3);
-}
-.modal .name-error.show {
-  display: block;
-  animation: shake 0.4s ease;
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-5px); }
-  80% { transform: translateX(5px); }
-}
+.skin-card:hover { border-color: var(--accent); }
+.skin-card.active { border-color: var(--accent); background: var(--surface-2); }
 
-/* Правила */
+.skin-preview { display: flex; gap: 2px; }
+.skin-preview span { width: 12px; height: 12px; border-radius: 2px; display: block; }
+.skin-label { font-size: 0.62rem; color: var(--text-muted); text-align: center; }
+
+/* Rules */
 .rules {
-  margin-top: 24px;
+  margin-top: 20px;
   width: 100%;
   max-width: 360px;
-  background: linear-gradient(145deg, rgba(22,33,62,0.5), rgba(15,52,96,0.3));
-  border: 1px solid rgba(79,195,247,0.15);
-  border-radius: 16px;
-  padding: 18px 20px;
-}
-.rules h3 {
-  text-align: center;
-  color: #f5d76e;
-  margin-bottom: 12px;
-  font-size: 1rem;
-  text-shadow: 0 0 10px rgba(245,215,110,0.2);
-  letter-spacing: 1px;
-}
-.rules ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.rules li {
-  font-size: 0.85rem;
-  color: #b0bec5;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.4;
-}
-.rules li b { color: #e0e0e0; }
-.r-dot {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.r-icon {
-  font-size: 1rem;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 1px;
 }
 
-/* lb-col на мобиле — прозрачный контейнер */
+.rules ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+.rules li {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.5;
+}
+.rules li b { color: var(--text); }
+
+.r-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.r-icon { font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+
+/* Mobile: lb-col transparent */
 .lb-col { display: contents; }
 .rules-desktop { display: none; }
 .rules-mobile { display: block; }
 
-/* Десктоп */
+/* Desktop */
 @media (min-width: 768px) {
-  body { padding: 20px 40px; }
+  body { padding: 24px 48px; }
+
   .game-wrapper {
     display: flex;
     gap: 32px;
     align-items: flex-start;
     justify-content: center;
     width: 100%;
-    max-width: 900px;
-    margin-top: 8px;
+    max-width: 980px;
+    margin-top: 16px;
   }
+
   .game-col {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  h1 { font-size: 2rem; margin-bottom: 6px; }
-  #score-display { font-size: 1.3rem; margin-bottom: 12px; }
+
+  h1 { font-size: 1.6rem; margin-bottom: 6px; }
+  #score-display { font-size: 1.05rem; margin-bottom: 14px; }
   canvas { max-width: none; }
   .controls { display: none !important; }
-  #start-btn {
-    padding: 16px 52px;
-    font-size: 1.2rem;
-    border-radius: 14px;
-  }
-  .skins-toggle { font-size: 0.95rem; padding: 9px 24px; }
-  .skins-panel { max-width: 400px; }
+
+  #start-btn { padding: 12px 44px; font-size: 1rem; }
+
+  .skins-toggle { font-size: 0.85rem; }
+  .skins-panel { max-width: 380px; }
+
   .lb-col {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     align-items: stretch;
+    min-width: 280px;
+    max-width: 340px;
   }
+
   .rules-desktop { display: block; }
   .rules-mobile { display: none; }
-  .rules {
+
+  .leaderboard, .rules {
     max-width: none;
     margin-top: 0;
+    width: 100%;
   }
-  .leaderboard {
-    max-width: 380px;
-    min-width: 320px;
-    margin-top: 0;
-  }
-  .leaderboard h3 { font-size: 1.2rem; }
-  .lb-table td { font-size: 1rem; padding: 10px 12px; }
-  .lb-table th { font-size: 0.85rem; padding: 9px 12px; }
-  .modal { max-width: 380px; padding: 36px 32px; }
-  .modal h2 { font-size: 1.5rem; }
+
+  .lb-table td { font-size: 0.9rem; padding: 9px 10px; }
+  .lb-table th { font-size: 0.68rem; padding: 7px 10px; }
+
+  .modal { max-width: 360px; padding: 32px 28px; }
+  .modal h2 { font-size: 1.25rem; }
   .modal .final-score { font-size: 3.2rem; }
-  .modal input { padding: 14px; font-size: 1.05rem; }
-  .modal button { padding: 14px; font-size: 1.05rem; }
+  .modal input { padding: 13px; }
+  .modal button { padding: 13px; }
+
   .kb-hint {
     display: block;
-    margin-top: 12px;
-    color: #556;
-    font-size: 0.8rem;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
     text-align: center;
   }
 }
+
 @media (max-width: 767px) {
-  .game-wrapper {
-    display: contents;
-  }
-  .game-col {
-    display: contents;
-  }
+  .game-wrapper { display: contents; }
+  .game-col { display: contents; }
   .kb-hint { display: none; }
 }
 </style>
@@ -483,8 +452,8 @@ canvas {
     <div class="rules rules-desktop">
       <h3>Правила</h3>
       <ul>
-        <li><span class="r-dot" style="background:#f5d76e;box-shadow:0 0 6px #f5d76e"></span> <b>Обычная еда</b> — +10 очков</li>
-        <li><span class="r-dot" style="background:#ff3cff;box-shadow:0 0 6px #ff3cff"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+        <li><span class="r-dot" style="background:#f0c040"></span> <b>Обычная еда</b> — +10 очков</li>
+        <li><span class="r-dot" style="background:#d946ef"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
         <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
         <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
       </ul>
@@ -616,11 +585,11 @@ function checkSpeedAndSpecials() {
 
 function draw() {
   // Фон
-  ctx.fillStyle = '#0f3460';
+  ctx.fillStyle = '#0f1923';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Сетка (тонкая)
-  ctx.strokeStyle = 'rgba(79,195,247,0.07)';
+  // Сетка
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
   ctx.lineWidth = 1;
   for (let x = 0; x <= COLS; x++) {
     ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, ROWS * CELL); ctx.stroke();
@@ -629,14 +598,12 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(COLS * CELL, y * CELL); ctx.stroke();
   }
 
-  // Еда — свечение
-  ctx.shadowColor = '#f5d76e';
-  ctx.shadowBlur = 12;
-  ctx.fillStyle = '#f5d76e';
-  ctx.beginPath();
-  ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
-  ctx.fill();
+  // Еда
   ctx.shadowBlur = 0;
+  ctx.fillStyle = '#f0c040';
+  ctx.beginPath();
+  ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+  ctx.fill();
 
   // Бонусная еда
   if (bonusFood) {
@@ -644,47 +611,35 @@ function draw() {
     const bonusBlinking = bonusElapsed > 4000;
     const bonusVisible = !bonusBlinking || Math.floor(Date.now() / 200) % 2 === 0;
     if (bonusVisible) {
-      ctx.shadowColor = '#ff3cff';
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = '#ff3cff';
-      ctx.beginPath();
-      ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 1, 0, Math.PI * 2);
-      ctx.fill();
       ctx.shadowBlur = 0;
+      ctx.fillStyle = '#d946ef';
+      ctx.beginPath();
+      ctx.arc(bonusFood.x * CELL + CELL / 2, bonusFood.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
   // Тёмная еда (сокращает хвост)
   if (darkFood) {
-    ctx.shadowColor = '#ff3333';
-    ctx.shadowBlur = 12;
-    ctx.fillStyle = '#111111';
-    ctx.beginPath();
-    ctx.arc(darkFood.x * CELL + CELL / 2, darkFood.y * CELL + CELL / 2, CELL / 2 - 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ff3333';
-    ctx.lineWidth = 2;
-    ctx.stroke();
     ctx.shadowBlur = 0;
+    ctx.fillStyle = '#1a1a2a';
+    ctx.beginPath();
+    ctx.arc(darkFood.x * CELL + CELL / 2, darkFood.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   }
 
   // Змейка
   const skin = SKINS[currentSkin];
+  ctx.shadowBlur = 0;
   snake.forEach((seg, i) => {
-    if (i === 0) {
-      ctx.fillStyle = skin.head;
-      ctx.shadowColor = skin.head;
-      ctx.shadowBlur = 8;
-    } else {
-      const colors = skin.body;
-      ctx.fillStyle = colors[(i - 1) % colors.length];
-      ctx.shadowBlur = 0;
-    }
+    ctx.fillStyle = i === 0 ? skin.head : skin.body[(i - 1) % skin.body.length];
     ctx.beginPath();
     ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 4);
     ctx.fill();
   });
-  ctx.shadowBlur = 0;
 }
 
 function updateScore() {
@@ -896,8 +851,8 @@ renderLeaderboard();
 <div class="rules rules-mobile">
   <h3>Правила</h3>
   <ul>
-    <li><span class="r-dot" style="background:#f5d76e;box-shadow:0 0 6px #f5d76e"></span> <b>Обычная еда</b> — +10 очков</li>
-    <li><span class="r-dot" style="background:#ff3cff;box-shadow:0 0 6px #ff3cff"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
+    <li><span class="r-dot" style="background:#f0c040"></span> <b>Обычная еда</b> — +10 очков</li>
+    <li><span class="r-dot" style="background:#d946ef"></span> <b>Бонусная еда</b> — появляется каждые 5 съеденных, даёт +30 очков, исчезает через 8 сек (последние 4 сек мигает)</li>
     <li><span class="r-dot" style="background:#111;border:2px solid #ff3333"></span> <b>Тёмная еда</b> — появляется каждые 20 очков при счёте 600–700, уменьшает хвост на 5 клеток, исчезает через 10 сек</li>
     <li><span class="r-icon">⚡</span> На <b>700 очках</b> змейка ускоряется</li>
   </ul>
