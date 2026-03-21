@@ -225,6 +225,40 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   80% { transform: translateX(5px); }
 }
 
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.game-col { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.side-col { display: none; }
+#leaderboard-desktop .leaderboard { margin-top: 0; }
+
+@media (min-width: 800px) {
+  #board { max-width: 420px; }
+  .piece-cell { width: 36px; height: 36px; }
+  .piece-container { gap: 3px; }
+  #pieces-area { gap: 24px; min-height: 140px; }
+  .game-layout {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    max-width: 900px;
+  }
+  .game-col { max-width: 420px; }
+  .side-col {
+    display: block;
+    min-width: 260px;
+    max-width: 320px;
+    padding-top: 8px;
+  }
+  .leaderboard.mobile-only { display: none; }
+  h1 { font-size: 1.8rem; }
+  #score-display { font-size: 1.2rem; margin-bottom: 12px; }
+}
+
 #combo-popup {
   position: fixed;
   top: 50%;
@@ -251,11 +285,16 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
 <h1>Block Blast</h1>
 <div id="score-display">Очки: 0</div>
 
-<div id="board"></div>
-
-<div id="pieces-area"></div>
-
-<button id="start-btn">Играть</button>
+<div class="game-layout">
+  <div class="game-col">
+    <div id="board"></div>
+    <div id="pieces-area"></div>
+    <button id="start-btn">Играть</button>
+  </div>
+  <div class="side-col">
+    <div class="leaderboard" id="leaderboard-desktop"></div>
+  </div>
+</div>
 
 <div id="drag-preview"></div>
 <div id="combo-popup"></div>
@@ -270,7 +309,7 @@ h1 { font-size: 1.4rem; color: #fff; margin-bottom: 4px; }
   </div>
 </div>
 
-<div class="leaderboard">
+<div class="leaderboard mobile-only">
   <h3>Таблица лидеров</h3>
   <div id="lb-body"></div>
 </div>
@@ -373,7 +412,8 @@ function renderPieces() {
     const cols = p.shape[0].length;
     const container = document.createElement('div');
     container.className = 'piece-container';
-    container.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
+    const pieceSize = window.innerWidth >= 800 ? 36 : 28;
+    container.style.gridTemplateColumns = `repeat(${cols}, ${pieceSize}px)`;
     container.dataset.idx = idx;
 
     if (!canPlaceAnywhere(p)) {
@@ -710,21 +750,24 @@ function saveResult() {
 }
 
 function renderLeaderboard() {
-  const el = document.getElementById('lb-body');
-  el.innerHTML = '<div class="lb-empty">Загрузка...</div>';
+  const targets = [document.getElementById('lb-body'), document.getElementById('leaderboard-desktop')];
+  targets.forEach(el => { if (el) el.innerHTML = '<div class="lb-empty">Загрузка...</div>'; });
   fetch(API_URL)
     .then(r => r.json())
     .then(lb => {
-      if (!lb.length) { el.innerHTML = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; return; }
-      let html = '<table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
-      lb.forEach((r, i) => {
-        const cls = i < 3 ? ` class="top-${i + 1}"` : '';
-        html += `<tr${cls}><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
-      });
-      html += '</table>';
-      el.innerHTML = html;
+      let html;
+      if (!lb.length) { html = '<div class="lb-empty">Пока нет результатов. Будь первым!</div>'; }
+      else {
+        html = '<h3>Таблица лидеров</h3><table class="lb-table"><tr><th class="rank">#</th><th class="name">Имя</th><th class="pts">Очки</th></tr>';
+        lb.forEach((r, i) => {
+          const cls = i < 3 ? ` class="top-${i + 1}"` : '';
+          html += `<tr${cls}><td class="rank">${i + 1}</td><td class="name">${esc(r.name)}</td><td class="pts">${r.score}</td></tr>`;
+        });
+        html += '</table>';
+      }
+      targets.forEach(el => { if (el) el.innerHTML = html; });
     })
-    .catch(() => { el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; });
+    .catch(() => { targets.forEach(el => { if (el) el.innerHTML = '<div class="lb-empty">Ошибка загрузки</div>'; }); });
 }
 
 function esc(s) {
