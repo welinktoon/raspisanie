@@ -64,22 +64,21 @@ canvas {
   border-radius: 8px;
   background: #0f1923;
   display: block;
-  max-width: 100%;
 }
 
 /* Controls */
 .controls {
   display: grid;
   grid-template-areas: ". up ." "left down right";
-  grid-template-columns: 64px 64px 64px;
-  grid-template-rows: 64px 64px;
+  grid-template-columns: 72px 72px 72px;
+  grid-template-rows: 72px 72px;
   gap: 6px;
   margin-top: 16px;
 }
 
 .ctrl-btn {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
@@ -499,9 +498,9 @@ const SKINS = {
 let currentSkin = 'classic';
 
 const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-const CELL = isDesktop ? 28 : 20;
 const COLS = 15;
 const ROWS = 20;
+const CELL = isDesktop ? 28 : Math.floor((window.innerWidth - 32) / COLS);
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = COLS * CELL;
