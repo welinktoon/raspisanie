@@ -449,12 +449,6 @@ function render() {
 
   const week = buildWeekSchedule(now);
   const weekEl = document.getElementById('week');
-  const collapsedDays = new Set(
-    [...weekEl.querySelectorAll('.day.collapsed')].map(el => {
-      const h = el.querySelector('.day-header');
-      return h ? [...h.classList].find(c => ['mon','tue','wed','thu','fri'].includes(c)) : null;
-    }).filter(Boolean)
-  );
   weekEl.innerHTML = '';
 
   const todayData = isWeekend ? null : week.find(d => d.idx === todayIdx);
@@ -502,11 +496,17 @@ function render() {
       });
     }
 
-    if (collapsedDays.has(d.short)) dayEl.classList.add('collapsed');
-    hdr.addEventListener('click', () => dayEl.classList.toggle('collapsed'));
+    if (collapsedDaySet.has(d.short)) dayEl.classList.add('collapsed');
+    hdr.addEventListener('click', () => {
+      dayEl.classList.toggle('collapsed');
+      if (dayEl.classList.contains('collapsed')) collapsedDaySet.add(d.short);
+      else collapsedDaySet.delete(d.short);
+    });
     weekEl.appendChild(dayEl);
   });
 }
+
+const collapsedDaySet = new Set(['mon','tue','wed','thu','fri']);
 
 render();
 setInterval(render, 10000);

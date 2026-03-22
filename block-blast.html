@@ -430,8 +430,9 @@ body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
   <div class="modal">
     <h2>Игра окончена!</h2>
     <div class="final-score" id="final-score">0</div>
-    <input type="text" id="player-name" placeholder="Ваше имя (Enter)" maxlength="20" autocomplete="off">
+    <input type="text" id="player-name" placeholder="Ваше имя" maxlength="20" autocomplete="off">
     <div class="name-error" id="name-error"></div>
+    <button id="save-btn" onclick="saveResult()">Сохранить</button>
   </div>
 </div>
 
@@ -736,25 +737,20 @@ function quit() {
 function gameOver() {
   running = false;
   document.body.classList.remove('playing');
-  document.getElementById('final-score').textContent = score;
-  document.getElementById('gameover-overlay').classList.add('show');
   document.getElementById('start-btn').style.display = 'block';
-  const wasQuitting = isQuitting;
+  if (gameOverTimer) { clearTimeout(gameOverTimer); gameOverTimer = null; }
   if (isQuitting) {
     isQuitting = false;
-    document.getElementById('player-name').style.display = 'none';
-  } else {
-    document.getElementById('player-name').focus();
-  }
-  if (gameOverTimer) clearTimeout(gameOverTimer);
-  if (wasQuitting) {
     const savedScore = score;
-    gameOverTimer = setTimeout(() => {
-      gameOverTimer = null;
-      document.getElementById('gameover-overlay').classList.remove('show');
-      fetch(API_URL, { method: 'POST', body: JSON.stringify({ name: 'Аноним', score: savedScore }) })
-        .then(() => refreshIfTopScore(savedScore)).catch(() => {});
-    }, 3000);
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ name: 'Аноним', score: savedScore }) })
+      .then(() => refreshIfTopScore(savedScore)).catch(() => {});
+  } else {
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('player-name').style.display = '';
+    document.getElementById('player-name').value = '';
+    document.getElementById('name-error').classList.remove('show');
+    document.getElementById('gameover-overlay').classList.add('show');
+    document.getElementById('player-name').focus();
   }
 }
 
