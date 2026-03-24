@@ -383,23 +383,50 @@ body.theme-hell .cell { background: #220800; }
 body.theme-hell #score-display { animation: hellScore 1.5s ease-in-out infinite; }
 body.theme-hell h1 { color: #ff6600; text-shadow: 0 0 12px #ff4500; }
 
+@keyframes comboPop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-8deg); }
+  25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.45) rotate(4deg); }
+  45%  { transform: translate(-50%, -50%) scale(0.9) rotate(-2deg); }
+  60%  { transform: translate(-50%, -50%) scale(1.1) rotate(1deg); }
+  75%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0; }
+}
+@keyframes scoreFloat {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  20%  { opacity: 1; transform: translateY(-12px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-65px) scale(0.8); }
+}
+@keyframes scorePulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.22); }
+  65%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
 #combo-popup {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  font-size: 2rem;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
   font-weight: 900;
-  color: #f5d76e;
-  text-shadow: 0 0 20px rgba(245,215,110,0.6);
   pointer-events: none;
   z-index: 50;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
   opacity: 0;
 }
 #combo-popup.show {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
+  animation: comboPop 1s ease-out forwards;
+}
+.score-float {
+  position: fixed;
+  font-weight: 900;
+  font-size: 1.3rem;
+  text-shadow: 0 0 12px currentColor;
+  pointer-events: none;
+  z-index: 200;
+  animation: scoreFloat 1s ease-out forwards;
+}
+#score-display.score-pulse {
+  animation: scorePulse 0.35s ease-out;
 }
 </style>
 </head>
@@ -472,6 +499,8 @@ const SHAPES = [
   [[1,0],[1,1],[1,0]],
   [[1,1,0],[0,1,1]],
   [[0,1,1],[1,1,0]],
+  [[0,1],[1,1],[1,0]],
+  [[1,0],[1,1],[0,1]],
   [[1,1,1],[1,1,1]],
   [[1,1],[1,1],[1,1]],
   [[1,1,1],[1,1,1],[1,1,1]],
@@ -484,7 +513,7 @@ const SHAPES = [
 let isQuitting = false;
 let gameOverTimer = null;
 
-// Веса: обычные=3, тяжёлые (1×5, 5×1)=1, убийца (3×3)=1
+// Веса: обычные=3, тяжёлые (1×5, 5×1)=1, убийца (3×3)=1, S/Z все=2
 const SHAPE_WEIGHTS = [
   3,3,3,3,3,3, // 0-5
   3,3,3,3,     // 6-9
@@ -492,10 +521,11 @@ const SHAPE_WEIGHTS = [
   3,3,         // 14-15: 1×4, 4×1
   1,1,         // 16-17: 1×5, 5×1 — тяжёлые
   3,3,3,3,     // 18-21: T-фигуры
-  3,3,         // 22-23: S, Z
+  2,2,         // 22-23: S, Z горизонтальные
   2,2,         // 24-25: 3×2, 2×3
   1,           // 26: 3×3 — убийца
   3,3,3,3,     // 27-30
+  2,2,         // 31-32: S, Z вертикальные
 ];
 const SHAPE_TOTAL_WEIGHT = SHAPE_WEIGHTS.reduce((a, b) => a + b, 0);
 
@@ -551,6 +581,9 @@ function generateThreePieces() {
 
 function updateScore() {
   scoreEl.textContent = 'Очки: ' + score;
+  scoreEl.classList.remove('score-pulse');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-pulse');
   updateTheme();
 }
 
@@ -648,6 +681,7 @@ function placePiece(piece, startR, startC) {
     }
   }
   score += cells;
+  showScoreFloat(cells);
   updateScore();
 }
 
@@ -681,6 +715,7 @@ function checkAndClearLines() {
   const lineBonus = totalLines * 10;
   const comboBonus = totalLines > 1 ? totalLines * 20 : 0;
   score += lineBonus + comboBonus;
+  showScoreFloat(lineBonus + comboBonus);
   updateScore();
 
   if (totalLines > 1) {
@@ -711,9 +746,29 @@ function checkAndClearLines() {
 }
 
 function showCombo(lines, bonus) {
-  comboPopup.textContent = `x${lines} +${bonus}`;
+  const palette = ['', '', '#f5d76e', '#ff8c00', '#e74c3c', '#ff2fff'];
+  const color = palette[Math.min(lines, palette.length - 1)] || '#ff2fff';
+  comboPopup.style.color = color;
+  comboPopup.style.textShadow = `0 0 30px ${color}, 0 0 60px ${color}`;
+  comboPopup.textContent = lines >= 4 ? `МЕГА x${lines}! +${bonus}` : `x${lines} +${bonus}`;
+  comboPopup.classList.remove('show');
+  void comboPopup.offsetWidth;
   comboPopup.classList.add('show');
-  setTimeout(() => comboPopup.classList.remove('show'), 800);
+  setTimeout(() => comboPopup.classList.remove('show'), 1000);
+}
+
+function showScoreFloat(points) {
+  const el = document.createElement('div');
+  el.className = 'score-float';
+  el.textContent = '+' + points;
+  const rect = scoreEl.getBoundingClientRect();
+  const ox = (Math.random() - 0.5) * 50;
+  el.style.left = (rect.left + rect.width / 2 + ox - 18) + 'px';
+  el.style.top = (rect.bottom + 4) + 'px';
+  const colors = ['#f5d76e', '#7dcea0', '#4fc3f7', '#ff8c00'];
+  el.style.color = colors[Math.floor(Math.random() * colors.length)];
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
 }
 
 function checkGameOver() {
