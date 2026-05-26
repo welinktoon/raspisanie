@@ -1,69 +1,135 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Змейка</title>
+<script>
+(() => {
+  const savedTheme = localStorage.getItem('schedule-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg:         #0d1117;
-  --surface:    #161b26;
-  --surface-2:  #1e2636;
-  --border:     #252f3e;
-  --accent:     #4fc3f7;
-  --text:       #dde3ec;
-  --text-muted: #5a6a82;
-  --gold:       #f0c040;
-  --silver:     #8fa3ba;
-  --bronze:     #b07840;
+  --bg: #f3f6fb;
+  --bg-soft: #eef3f9;
+  --surface: #fdfefe;
+  --surface-strong: #ffffff;
+  --surface-2: #eef3f9;
+  --border: #d6deea;
+  --shadow: 0 14px 42px rgba(16, 24, 40, 0.08);
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #dbeafe;
+  --text: #101828;
+  --text-muted: #64748b;
+  --danger: #ef4444;
+  --gold: #d99a0b;
+  --silver: #728196;
+  --bronze: #a56836;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0b1220;
+  --bg-soft: #0f172a;
+  --surface: #111827;
+  --surface-strong: #172033;
+  --surface-2: #0f172a;
+  --border: #2b374d;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --accent: #60a5fa;
+  --accent-strong: #93c5fd;
+  --accent-soft: rgba(96, 165, 250, 0.16);
+  --text: #e5e7eb;
+  --text-muted: #94a3b8;
+  --danger: #f87171;
+  --gold: #f6c453;
+  --silver: #9ca3af;
+  --bronze: #c08450;
+  color-scheme: dark;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 54%, transparent), transparent 360px),
+    var(--bg);
   color: var(--text);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
+  padding: 14px clamp(12px, 2.5vw, 32px) 32px;
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
 }
 
 a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { color: var(--accent-strong); }
 
 .back {
-  font-size: 0.82rem;
-  margin-bottom: 6px;
-  align-self: flex-start;
+  width: 100%;
+  max-width: 1280px;
+  font-size: 0.86rem;
+  margin: 0 auto 16px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+
+.back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-muted);
+  font-weight: 750;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.back a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 h1 {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 850;
   color: var(--text);
-  margin-bottom: 2px;
-  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 #score-display {
+  min-width: 132px;
+  text-align: center;
   font-size: 0.95rem;
-  color: var(--gold);
-  margin-bottom: 8px;
+  color: var(--accent-strong);
+  margin-bottom: 12px;
   font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--surface-strong);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 canvas {
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #0f1923;
+  background: color-mix(in srgb, var(--surface-2) 55%, #0f172a);
   display: block;
+  box-shadow: var(--shadow);
 }
 
 /* Pre-game buttons row */
@@ -71,7 +137,7 @@ canvas {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 /* Controls */
@@ -79,31 +145,32 @@ canvas {
   display: grid;
   grid-template-areas: ". up ." "left down right";
   grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
   width: 100%;
   max-width: 260px;
 }
 
 .ctrl-btn {
-  height: 60px;
+  height: 58px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text-muted);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--accent);
   font-size: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.08s, color 0.08s;
+  transition: background 0.08s, color 0.08s, transform 0.08s;
   user-select: none;
 }
 
 .ctrl-btn:active {
   background: var(--accent);
-  color: var(--bg);
+  color: #fff;
+  transform: translateY(1px);
 }
 
 
@@ -114,24 +181,26 @@ canvas {
 
 /* Start button */
 #start-btn {
-  padding: 11px 36px;
+  padding: 11px 34px;
   background: var(--accent);
-  color: var(--bg);
+  color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
+  transition: background 0.15s, transform 0.15s;
 }
-#start-btn:hover { opacity: 0.82; }
+#start-btn:hover { background: var(--accent-strong); }
+#start-btn:active { transform: translateY(1px); }
 
 /* Overlay / Modal */
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
+  background: rgba(2, 6, 23, 0.68);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 100;
@@ -149,7 +218,7 @@ canvas {
 .modal {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 28px 24px;
   text-align: center;
   max-width: 320px;
@@ -157,7 +226,7 @@ canvas {
 }
 
 .modal h2 {
-  color: var(--gold);
+  color: var(--text);
   margin-bottom: 4px;
   font-size: 1.15rem;
   font-weight: 700;
@@ -175,7 +244,7 @@ canvas {
   padding: 11px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--bg-soft);
   color: var(--text);
   font-size: 1rem;
   text-align: center;
@@ -190,7 +259,7 @@ canvas {
   width: 100%;
   padding: 12px;
   background: var(--accent);
-  color: var(--bg);
+  color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -201,7 +270,7 @@ canvas {
 .modal button:hover { opacity: 0.82; }
 
 .modal .name-error {
-  color: #f87171;
+  color: var(--danger);
   font-size: 0.82rem;
   margin-bottom: 10px;
   display: none;
@@ -220,8 +289,9 @@ canvas {
 .leaderboard, .rules {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 16px;
+  box-shadow: var(--shadow);
 }
 
 .leaderboard h3, .rules h3 {
@@ -229,13 +299,13 @@ canvas {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.4px;
-  color: var(--text-muted);
+  color: var(--accent);
   margin-bottom: 14px;
 }
 
 /* Leaderboard */
 .leaderboard {
-  margin-top: 20px;
+  margin-top: 18px;
   width: 100%;
   max-width: 360px;
 }
@@ -264,7 +334,7 @@ canvas {
 .lb-table td {
   padding: 8px 10px;
   font-size: 0.88rem;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
   color: var(--text);
 }
 .lb-table tr:last-child td { border-bottom: none; }
@@ -287,7 +357,7 @@ canvas {
 
 /* Skins */
 .skins-toggle {
-  background: transparent;
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-muted);
   border-radius: 8px;
@@ -315,7 +385,7 @@ canvas {
   width: 66px;
 }
 .skin-card:hover { border-color: var(--accent); }
-.skin-card.active { border-color: var(--accent); background: var(--surface-2); }
+.skin-card.active { border-color: var(--accent); background: var(--accent-soft); }
 
 .skin-preview { display: flex; gap: 2px; }
 .skin-preview span { width: 12px; height: 12px; border-radius: 2px; display: block; }
@@ -357,11 +427,11 @@ canvas {
 
 /* Desktop */
 @media (min-width: 768px) {
-  body { padding: 24px 48px; }
+  body { padding: 14px clamp(18px, 3vw, 48px) 32px; }
 
   .game-wrapper {
     display: flex;
-    gap: 32px;
+    gap: 28px;
     align-items: flex-start;
     justify-content: center;
     width: 100%;
@@ -375,7 +445,7 @@ canvas {
     align-items: center;
   }
 
-  h1 { font-size: 1.6rem; margin-bottom: 6px; }
+  h1 { margin-bottom: 6px; }
   #score-display { font-size: 1.05rem; margin-bottom: 14px; }
   canvas { max-width: none; }
   .controls { display: none !important; }
@@ -433,7 +503,7 @@ canvas {
 </head>
 <body>
 
-<div class="back"><a href="index.html">&larr; Расписание</a></div>
+<div class="back"><a href="index.html?v=2">&larr; Расписание</a></div>
 <h1>Змейка</h1>
 <div id="score-display">Очки: 0</div>
 
@@ -490,8 +560,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzPfAYsmjlI1Gy1jb8H-c1u
 const SKINS = {
   classic: {
     name: 'Классика',
-    head: '#4fc3f7',
-    body: ['#7dcea0']
+    head: '#2563eb',
+    body: ['#93c5fd']
   },
   rainbow: {
     name: 'Радуга',

@@ -1,37 +1,95 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Админка — ДЗ</title>
+<script>
+(() => {
+  const savedTheme = localStorage.getItem('schedule-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f3f6fb;
+  --surface: #fdfefe;
+  --surface-strong: #ffffff;
+  --surface-2: #eef3f9;
+  --border: #d6deea;
+  --shadow: 0 14px 42px rgba(16, 24, 40, 0.08);
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #dbeafe;
+  --text: #101828;
+  --text-muted: #64748b;
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-strong: #172033;
+  --surface-2: #0f172a;
+  --border: #2b374d;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --accent: #60a5fa;
+  --accent-strong: #93c5fd;
+  --accent-soft: rgba(96, 165, 250, 0.16);
+  --text: #e5e7eb;
+  --text-muted: #94a3b8;
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  color-scheme: dark;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 54%, transparent), transparent 360px),
+    var(--bg);
+  color: var(--text);
   min-height: 100vh;
-  padding: 16px 16px 40px;
+  padding: 14px clamp(12px, 2.5vw, 32px) 40px;
 }
 
 /* ── Nav ── */
 nav {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow);
 }
 nav a {
-  padding: 8px 20px;
+  flex: 1;
+  min-height: 42px;
+  padding: 0 12px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.9rem;
-  color: #8899aa;
-  background: #16213e;
-  transition: background 0.15s;
+  color: var(--text-muted);
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
 }
-nav a.active { background: #4fc3f7; color: #1a1a2e; }
+nav a:hover { color: var(--accent); }
+nav a.active { background: var(--accent); color: #fff; }
 
 /* ── Auth ── */
 #auth-screen {
@@ -41,17 +99,19 @@ nav a.active { background: #4fc3f7; color: #1a1a2e; }
   min-height: 80vh;
 }
 #auth-card {
-  background: #16213e;
-  border-radius: 14px;
-  padding: 32px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: var(--shadow);
 }
-#auth-card h2 { color: #fff; font-size: 1.2rem; text-align: center; }
-#auth-error { min-height: 18px; font-size: 0.85rem; color: #ef9a9a; text-align: center; }
+#auth-card h2 { color: var(--text); font-size: 1.2rem; text-align: center; }
+#auth-error { min-height: 18px; font-size: 0.85rem; color: var(--danger); text-align: center; }
 .shake { animation: shake 0.35s ease; }
 @keyframes shake {
   0%,100% { transform: translateX(0); }
@@ -62,10 +122,10 @@ nav a.active { background: #4fc3f7; color: #1a1a2e; }
 /* ── Inputs ── */
 input[type=password], input[type=date], input[type=text],
 textarea, select {
-  background: #0f1729;
-  border: 1px solid #2a3a5a;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: #e0e0e0;
+  color: var(--text);
   padding: 10px 12px;
   font-size: 0.92rem;
   font-family: inherit;
@@ -73,14 +133,17 @@ textarea, select {
   outline: none;
   transition: border-color 0.15s;
 }
-input:focus, textarea:focus, select:focus { border-color: #4fc3f7; }
-select option { background: #16213e; }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+select option { background: var(--surface); }
 textarea { resize: vertical; }
 
 /* ── Buttons ── */
 .btn {
-  background: #4fc3f7;
-  color: #1a1a2e;
+  background: var(--accent);
+  color: #fff;
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
@@ -88,85 +151,91 @@ textarea { resize: vertical; }
   font-size: 0.92rem;
   cursor: pointer;
   width: 100%;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.15s;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
 }
-.btn:hover { background: #29b6f6; }
+.btn:hover { background: var(--accent-strong); }
+.btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .btn-sm {
-  background: transparent;
-  border: 1px solid #ef5350;
-  color: #ef5350;
-  border-radius: 6px;
-  padding: 4px 10px;
+  background: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 38%, transparent);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 6px 10px;
   font-size: 0.8rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.btn-sm:hover { background: #ef5350; color: #fff; }
+.btn-sm:hover { background: var(--danger); color: #fff; }
 .btn-logout {
-  background: transparent;
-  border: 1px solid #2a3a5a;
-  color: #8899aa;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   border-radius: 8px;
-  padding: 6px 14px;
+  padding: 8px 14px;
   font-size: 0.82rem;
   cursor: pointer;
 }
-.btn-logout:hover { border-color: #8899aa; color: #e0e0e0; }
+.btn-logout:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Panel ── */
-#panel { display: none; max-width: 640px; margin: 0 auto; }
+#panel { display: none; max-width: 760px; margin: 0 auto; }
 .panel-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
-.panel-top h1 { color: #fff; font-size: 1.4rem; }
+.panel-top h1 { color: var(--text); font-size: clamp(1.35rem, 3vw, 1.75rem); }
 
 /* ── Add card ── */
 .add-card {
-  background: #16213e;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 20px;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
 }
-.add-card h2 { color: #fff; font-size: 0.95rem; margin-bottom: 16px; }
+.add-card h2 { color: var(--text); font-size: 1rem; margin-bottom: 16px; }
 .form-group { margin-bottom: 12px; }
 .form-group label {
   display: block;
   font-size: 0.75rem;
-  color: #6dbfb8;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 5px;
 }
 .dates-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-#save-status { text-align: center; font-size: 0.85rem; color: #6dbfb8; min-height: 22px; margin-top: 6px; }
+#save-status { text-align: center; font-size: 0.85rem; color: var(--accent); min-height: 22px; margin-top: 8px; }
 
 /* ── HW list ── */
 .section-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #6dbfb8;
+  color: var(--accent);
   margin-bottom: 12px;
   font-weight: 600;
 }
 .day-group { margin-bottom: 20px; }
 .day-group-hdr {
   font-size: 0.85rem;
-  color: #8899aa;
+  color: var(--text-muted);
   margin-bottom: 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #1a1a3e;
+  border-bottom: 1px solid var(--border);
 }
 .hw-row {
-  background: #16213e;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 13px 14px;
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
@@ -174,19 +243,36 @@ textarea { resize: vertical; }
   gap: 12px;
 }
 .hw-row-info { flex: 1; min-width: 0; }
-.hw-row-subject { font-weight: 700; color: #fff; font-size: 0.92rem; margin-bottom: 3px; }
-.hw-row-text { font-size: 0.85rem; color: #b0b8c8; line-height: 1.4; }
-.hw-row-meta { font-size: 0.73rem; color: #556677; margin-top: 4px; }
-.list-empty { text-align: center; color: #3a4a5a; font-style: italic; padding: 30px; font-size: 0.9rem; }
+.hw-row-subject { font-weight: 700; color: var(--text); font-size: 0.92rem; margin-bottom: 3px; }
+.hw-row-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; overflow-wrap: anywhere; }
+.hw-row-meta { font-size: 0.73rem; color: color-mix(in srgb, var(--text-muted) 72%, transparent); margin-top: 5px; }
+.list-empty {
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 30px;
+  font-size: 0.9rem;
+}
 #past-wrap { text-align: center; margin-top: 16px; }
-#past-wrap label { font-size: 0.85rem; color: #8899aa; cursor: pointer; gap: 6px; display: inline-flex; align-items: center; }
+#past-wrap label { font-size: 0.85rem; color: var(--text-muted); cursor: pointer; gap: 8px; display: inline-flex; align-items: center; }
+#past-wrap input { accent-color: var(--accent); }
+
+@media (max-width: 520px) {
+  body { padding: 10px 10px 34px; }
+  nav { margin-bottom: 14px; }
+  .panel-top { align-items: flex-start; }
+  .dates-row { grid-template-columns: 1fr; gap: 0; }
+  .add-card { padding: 16px; }
+  .hw-row { padding: 12px; }
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="index.html">Расписание</a>
-  <a href="admin.html" class="active">Админка</a>
+  <a href="index.html?v=2">Расписание</a>
+  <a href="admin.html?v=2" class="active">Админка</a>
 </nav>
 
 <!-- Auth -->
@@ -328,7 +414,7 @@ async function loadHw() {
     renderList();
   } catch (e) {
     document.getElementById('hw-list').innerHTML =
-      `<div class="list-empty" style="color:#ef9a9a">Ошибка загрузки: ${e.message}</div>`;
+      `<div class="list-empty" style="color:#ef4444">Ошибка загрузки: ${e.message}</div>`;
   }
 }
 
@@ -337,7 +423,7 @@ async function addHw() {
   const text        = document.getElementById('f-text').value.trim();
   const lesson_date = document.getElementById('f-lesson-date').value;
   const deadline    = document.getElementById('f-deadline').value;
-  if (!subject || !text || !lesson_date || !deadline) { setStatus('Заполни все поля','#ef9a9a'); return; }
+  if (!subject || !text || !lesson_date || !deadline) { setStatus('Заполни все поля','#ef4444'); return; }
   const btn = document.getElementById('add-btn');
   btn.disabled = true; setStatus('Сохранение...');
   try {
@@ -349,11 +435,11 @@ async function addHw() {
     const res = await fetch(url);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'ошибка');
-    setStatus('Сохранено','#6dbfb8');
+    setStatus('Сохранено','#2563eb');
     ['f-subject','f-text','f-lesson-date','f-deadline'].forEach(id => document.getElementById(id).value = '');
     await loadHw();
   } catch (e) {
-    setStatus('Ошибка: ' + e.message, '#ef9a9a');
+    setStatus('Ошибка: ' + e.message, '#ef4444');
   } finally {
     btn.disabled = false;
   }
@@ -371,7 +457,7 @@ async function deleteHw(id) {
 
 function setStatus(msg, color) {
   const el = document.getElementById('save-status');
-  el.textContent = msg; el.style.color = color || '#6dbfb8';
+  el.textContent = msg; el.style.color = color || '#2563eb';
   if (msg === 'Сохранено') setTimeout(() => { el.textContent = ''; }, 2000);
 }
 
