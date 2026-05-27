@@ -612,6 +612,16 @@ h1 {
 
 .no-classes { font-size: 0.88rem; padding: 28px 16px; text-align: center; }
 
+.day-body {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.day-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .weeks-hw {
   display: grid;
   gap: 18px;
@@ -772,11 +782,29 @@ footer {
   .chevron { display: inline; }
   .day:hover,
   .hw-day:hover { box-shadow: none; transform: none; }
-  .day.collapsed .lesson,
-  .day.collapsed .no-classes { display: none; }
+  .day-body {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      grid-template-rows 0.34s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.24s ease,
+      transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: grid-template-rows, opacity, transform;
+  }
+  .day.collapsed .day-body {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
   .day.collapsed .chevron { transform: rotate(-90deg); }
   .hw-day:not(.today):not(.expanded) .hw-body { display: none; }
   footer { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-body {
+    transition: none !important;
+  }
 }
 </style>
 </head>
@@ -803,9 +831,9 @@ footer {
       </nav>
 
       <div class="quick-links" aria-label="Быстрые ссылки">
-        <a href="snake.html?v=3" class="quick-link"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
-        <a href="block-blast.html?v=3" class="quick-link"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
-        <a href="admin.html?v=3" class="quick-link admin-link"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
+        <a href="snake.html?v=4" class="quick-link"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
+        <a href="block-blast.html?v=4" class="quick-link"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
+        <a href="admin.html?v=4" class="quick-link admin-link"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
       </div>
 
       <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true">
@@ -820,15 +848,15 @@ footer {
         <i data-lucide="moon" aria-hidden="true" id="mobile-theme-icon"></i>
         <span><strong id="mobile-theme-label">Темная тема</strong><small>переключить оформление</small></span>
       </button>
-      <a class="mobile-menu-item" href="snake.html?v=3">
+      <a class="mobile-menu-item" href="snake.html?v=4">
         <i data-lucide="gamepad-2" aria-hidden="true"></i>
         <span><strong>Змейка</strong><small>быстрый перерыв</small></span>
       </a>
-      <a class="mobile-menu-item" href="block-blast.html?v=3">
+      <a class="mobile-menu-item" href="block-blast.html?v=4">
         <i data-lucide="blocks" aria-hidden="true"></i>
         <span><strong>Block Blast</strong><small>еще одна игра</small></span>
       </a>
-      <a class="mobile-menu-item" href="admin.html?v=3">
+      <a class="mobile-menu-item" href="admin.html?v=4">
         <i data-lucide="settings-2" aria-hidden="true"></i>
         <span><strong>Админка</strong><small>управление заданиями</small></span>
       </a>
@@ -878,9 +906,9 @@ footer {
   </main>
 
   <footer>
-    <a href="snake.html?v=3" class="footer-game"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
-    <a href="block-blast.html?v=3" class="footer-game"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
-    <a href="admin.html?v=3" class="footer-admin"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
+    <a href="snake.html?v=4" class="footer-game"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
+    <a href="block-blast.html?v=4" class="footer-game"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
+    <a href="admin.html?v=4" class="footer-admin"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
   </footer>
 </div>
 
@@ -1190,11 +1218,17 @@ function render() {
       <span class="chevron">▼</span>`;
     dayEl.appendChild(hdr);
 
+    const bodyWrap = document.createElement('div');
+    bodyWrap.className = 'day-body';
+    const bodyInner = document.createElement('div');
+    bodyInner.className = 'day-body-inner';
+    bodyWrap.appendChild(bodyInner);
+
     if (!d.lessons.length) {
       const nc = document.createElement('div');
       nc.className = 'no-classes';
       nc.textContent = 'Нет пар';
-      dayEl.appendChild(nc);
+      bodyInner.appendChild(nc);
     } else {
       d.lessons.forEach(l => {
         const r = getRange(l.time);
@@ -1205,9 +1239,11 @@ function render() {
           <div class="lesson-time"><i class="inline-icon" data-lucide="clock" aria-hidden="true"></i>${l.time}${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}</div>
           <div class="lesson-name">${l.name}</div>
           <div class="lesson-room"><i class="inline-icon" data-lucide="map-pin" aria-hidden="true"></i>${l.room}</div>`;
-        dayEl.appendChild(div);
+        bodyInner.appendChild(div);
       });
     }
+
+    dayEl.appendChild(bodyWrap);
 
     if (collapsedDaySet.has(d.short)) dayEl.classList.add('collapsed');
     hdr.addEventListener('click', () => {
