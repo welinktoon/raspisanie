@@ -398,14 +398,57 @@ h1 {
 #week-range { color: var(--accent-strong); font-size: 0.82rem; font-weight: 750; line-height: 1.15; }
 
 #status {
+  align-content: center;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
-  justify-content: center;
+  display: grid;
+  gap: 4px;
+  height: auto;
+  justify-content: stretch;
+  min-height: 48px;
+  overflow: visible;
 }
 
 #status:empty { display: none; }
-.status-pair { font-size: 1.28rem; font-weight: 850; }
-.status-pair .room { color: var(--accent-strong); font-size: 0.9rem; font-weight: 750; margin-left: 8px; }
-.status-elapsed { color: var(--muted); font-size: 0.86rem; margin-top: 6px; }
+.status-summary {
+  align-items: center;
+  display: grid;
+  gap: 3px 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.status-summary .status-label {
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.status-main {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 850;
+  grid-column: 1 / -1;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.status-main .time-left {
+  color: var(--yellow);
+  font-weight: 900;
+  white-space: normal;
+}
+
+.status-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.status-pair { font-size: 1.1rem; font-weight: 850; line-height: 1.15; }
+.status-pair .room { color: var(--accent-strong); display: inline-block; font-size: 0.84rem; font-weight: 750; margin-left: 8px; }
+.status-elapsed { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
 .progress-wrap { background: var(--surface-muted); border-radius: 999px; height: 8px; margin-top: 12px; overflow: hidden; }
 .progress-bar { background: linear-gradient(90deg, var(--accent), var(--blue)); border-radius: inherit; height: 100%; transition: width 1s linear; }
 .status-current { margin-bottom: 14px; }
@@ -679,6 +722,21 @@ footer {
 
   nav button { flex: 1; padding: 0 10px; }
 
+  .status-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .status-summary .status-label,
+  .status-meta {
+    white-space: normal;
+  }
+
+  .status-main,
+  .status-meta {
+    grid-column: auto;
+    text-align: left;
+  }
+
   .theme-toggle { display: none; }
   .quick-links { display: none; }
 
@@ -745,9 +803,9 @@ footer {
       </nav>
 
       <div class="quick-links" aria-label="Быстрые ссылки">
-        <a href="snake.html?v=2" class="quick-link"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
-        <a href="block-blast.html?v=2" class="quick-link"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
-        <a href="admin.html?v=2" class="quick-link admin-link"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
+        <a href="snake.html?v=3" class="quick-link"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
+        <a href="block-blast.html?v=3" class="quick-link"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
+        <a href="admin.html?v=3" class="quick-link admin-link"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
       </div>
 
       <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true">
@@ -762,15 +820,15 @@ footer {
         <i data-lucide="moon" aria-hidden="true" id="mobile-theme-icon"></i>
         <span><strong id="mobile-theme-label">Темная тема</strong><small>переключить оформление</small></span>
       </button>
-      <a class="mobile-menu-item" href="snake.html?v=2">
+      <a class="mobile-menu-item" href="snake.html?v=3">
         <i data-lucide="gamepad-2" aria-hidden="true"></i>
         <span><strong>Змейка</strong><small>быстрый перерыв</small></span>
       </a>
-      <a class="mobile-menu-item" href="block-blast.html?v=2">
+      <a class="mobile-menu-item" href="block-blast.html?v=3">
         <i data-lucide="blocks" aria-hidden="true"></i>
         <span><strong>Block Blast</strong><small>еще одна игра</small></span>
       </a>
-      <a class="mobile-menu-item" href="admin.html?v=2">
+      <a class="mobile-menu-item" href="admin.html?v=3">
         <i data-lucide="settings-2" aria-hidden="true"></i>
         <span><strong>Админка</strong><small>управление заданиями</small></span>
       </a>
@@ -820,9 +878,9 @@ footer {
   </main>
 
   <footer>
-    <a href="snake.html?v=2" class="footer-game"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
-    <a href="block-blast.html?v=2" class="footer-game"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
-    <a href="admin.html?v=2" class="footer-admin"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
+    <a href="snake.html?v=3" class="footer-game"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
+    <a href="block-blast.html?v=3" class="footer-game"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
+    <a href="admin.html?v=3" class="footer-admin"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
   </footer>
 </div>
 
@@ -1056,9 +1114,11 @@ function renderStatus(todayData, nowMin) {
   const firstRange = getRange(lessons[0].time);
   if (!current && nowMin < firstRange.start) {
     el.innerHTML = `
-      <div class="status-label">Первая пара через</div>
-      <div class="status-next-text"><strong>${lessons[0].name}</strong> <span class="time-left">через ${fmtMin(firstRange.start-nowMin)}</span></div>
-      <div class="status-elapsed">${lessons[0].time} / ${lessons[0].room}</div>`;
+      <div class="status-summary">
+        <div class="status-label">Первая пара</div>
+        <div class="status-meta">${lessons[0].time} / ${lessons[0].room}</div>
+        <div class="status-main">${lessons[0].name} <span class="time-left">через ${fmtMin(firstRange.start-nowMin)}</span></div>
+      </div>`;
     return;
   }
   let html = '';
@@ -1082,9 +1142,11 @@ function renderStatus(todayData, nowMin) {
   if (next) {
     html += `
       <div class="status-next">
-        <div class="status-label">Следующая</div>
-        <div class="status-next-text"><strong>${next.name}</strong> <span class="time-left">через ${fmtMin(next.start-nowMin)}</span></div>
-        <div class="status-elapsed">${next.time} / ${next.room}</div>
+        <div class="status-summary">
+          <div class="status-label">Следующая</div>
+          <div class="status-meta">${next.time} / ${next.room}</div>
+          <div class="status-main">${next.name} <span class="time-left">через ${fmtMin(next.start-nowMin)}</span></div>
+        </div>
       </div>`;
   } else if (current) {
     html += '<div class="status-next"><div class="status-free">Последняя пара на сегодня</div></div>';
