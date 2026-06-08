@@ -227,6 +227,9 @@ nav button.active {
 }
 
 .quick-link.admin-link { color: var(--muted); }
+.quick-link.download-link {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+}
 .quick-link:hover {
   border-color: var(--accent);
   color: var(--accent-strong);
@@ -740,7 +743,11 @@ footer {
   .quick-links { flex: 1 1 320px; flex-wrap: wrap; }
   .theme-toggle { margin-left: auto; }
   .live-card { grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.25fr); }
-  .week { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1101px) and (max-width: 1199px) {
+  .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -961,6 +968,7 @@ footer {
       </nav>
 
       <div class="quick-links" aria-label="Быстрые ссылки">
+        <a href="raspisanie-webview-release.apk" class="quick-link download-link" download><i data-lucide="download" aria-hidden="true"></i>Android</a>
         <a href="snake.html?v=4" class="quick-link"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
         <a href="block-blast.html?v=4" class="quick-link"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
         <a href="admin.html?v=4" class="quick-link admin-link"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
@@ -978,6 +986,10 @@ footer {
         <i data-lucide="moon" aria-hidden="true" id="mobile-theme-icon"></i>
         <span><strong id="mobile-theme-label">Темная тема</strong><small>переключить оформление</small></span>
       </button>
+      <a class="mobile-menu-item" href="raspisanie-webview-release.apk" download>
+        <i data-lucide="download" aria-hidden="true"></i>
+        <span><strong>Android APK</strong><small>download app installer</small></span>
+      </a>
       <a class="mobile-menu-item" href="snake.html?v=4">
         <i data-lucide="gamepad-2" aria-hidden="true"></i>
         <span><strong>Змейка</strong><small>быстрый перерыв</small></span>
@@ -1030,6 +1042,7 @@ footer {
   </main>
 
   <footer>
+    <a href="raspisanie-webview-release.apk" class="footer-game" download><i data-lucide="download" aria-hidden="true"></i>Android</a>
     <a href="snake.html?v=4" class="footer-game"><i data-lucide="gamepad-2" aria-hidden="true"></i>Змейка</a>
     <a href="block-blast.html?v=4" class="footer-game"><i data-lucide="blocks" aria-hidden="true"></i>Block Blast</a>
     <a href="admin.html?v=4" class="footer-admin"><i data-lucide="settings" aria-hidden="true"></i>Админка</a>
