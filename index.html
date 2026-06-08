@@ -9,17 +9,20 @@
 <style>
 :root {
   color-scheme: light;
-  --bg: #f3f6fb;
-  --surface: #fdfefe;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
   --surface-strong: #ffffff;
-  --surface-muted: #eef3f9;
-  --text: #101828;
-  --muted: #667085;
-  --border: #d6deea;
+  --surface-muted: #f1f1f1;
+  --text: #111111;
+  --muted: #6b7280;
+  --border: #d8d8d8;
   --shadow: 0 14px 42px rgba(16, 24, 40, 0.08);
   --accent: #2563eb;
   --accent-strong: #1d4ed8;
-  --accent-soft: #dbeafe;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --current: #2563eb;
+  --current-strong: #1d4ed8;
+  --current-soft: rgba(37, 99, 235, 0.06);
   --blue: #60a5fa;
   --yellow: #f59e0b;
   --rose: #d946ef;
@@ -31,17 +34,20 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b1220;
-  --surface: #111827;
-  --surface-strong: #172033;
-  --surface-muted: #0f172a;
-  --text: #f8fafc;
-  --muted: #aab6ca;
-  --border: #2b374d;
+  --bg: #0f1419;
+  --surface: #16181c;
+  --surface-strong: #1d2025;
+  --surface-muted: #202327;
+  --text: #f7f7f7;
+  --muted: #a3a3a3;
+  --border: #2f3336;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
   --accent: #60a5fa;
   --accent-strong: #93c5fd;
-  --accent-soft: rgba(96, 165, 250, 0.16);
+  --accent-soft: rgba(96, 165, 250, 0.1);
+  --current: #60a5fa;
+  --current-strong: #93c5fd;
+  --current-soft: rgba(96, 165, 250, 0.08);
   --blue: #38bdf8;
   --yellow: #fbbf24;
   --rose: #e879f9;
@@ -56,9 +62,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 54%, transparent), transparent 360px),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
@@ -77,8 +81,8 @@ a:focus-visible {
 
 .app-shell {
   margin: 0 auto;
-  max-width: 1280px;
-  padding: 14px clamp(12px, 2.5vw, 32px) 32px;
+  max-width: 1440px;
+  padding: 14px clamp(10px, 2.5vw, 32px) 32px;
 }
 
 .app-header {
@@ -88,7 +92,7 @@ a:focus-visible {
   border-radius: 8px;
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(200px, auto) minmax(0, 1fr);
   padding: 12px;
   position: sticky;
   top: 10px;
@@ -151,6 +155,8 @@ a:focus-visible {
   align-items: center;
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 nav {
@@ -159,6 +165,7 @@ nav {
   border-radius: 8px;
   display: flex;
   gap: 4px;
+  min-width: 0;
   padding: 4px;
 }
 
@@ -201,6 +208,7 @@ nav button.active {
   align-items: center;
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .quick-link {
@@ -363,10 +371,17 @@ h1 {
 
 .live-card {
   align-content: start;
+  align-items: start;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(220px, 0.65fr) minmax(320px, 1.35fr);
   padding: 14px;
+}
+
+.live-card > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .mini-label,
@@ -379,6 +394,10 @@ h1 {
   font-size: 0.75rem;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.live-card .mini-label {
+  margin-bottom: 10px;
 }
 
 #clock,
@@ -394,7 +413,12 @@ h1 {
   padding: 8px 12px;
 }
 
-#clock { font-size: 0.96rem; font-weight: 800; }
+#clock {
+  flex: 1;
+  font-size: 0.96rem;
+  font-weight: 800;
+  min-height: 56px;
+}
 #week-range { color: var(--accent-strong); font-size: 0.82rem; font-weight: 750; line-height: 1.15; }
 
 #status {
@@ -404,7 +428,7 @@ h1 {
   gap: 4px;
   height: auto;
   justify-content: stretch;
-  min-height: 48px;
+  min-height: 56px;
   overflow: visible;
 }
 
@@ -512,9 +536,10 @@ h1 {
 }
 
 .week {
+  align-items: start;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
 .day,
@@ -522,15 +547,8 @@ h1 {
   background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: 8px;
+  min-width: 0;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-.day:hover,
-.hw-day:hover {
-  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
-  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 14%, transparent);
-  transform: translateY(-2px);
 }
 
 .day.today,
@@ -553,15 +571,15 @@ h1 {
 }
 
 .day-header.mon,
-.hw-day-header.mon { background: color-mix(in srgb, var(--blue) 16%, var(--surface)); color: var(--text); }
+.hw-day-header.mon { background: var(--surface-muted); color: var(--text); }
 .day-header.tue,
-.hw-day-header.tue { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--text); }
+.hw-day-header.tue { background: var(--surface-muted); color: var(--text); }
 .day-header.wed,
-.hw-day-header.wed { background: color-mix(in srgb, var(--violet) 14%, var(--surface)); color: var(--text); }
+.hw-day-header.wed { background: var(--surface-muted); color: var(--text); }
 .day-header.thu,
-.hw-day-header.thu { background: color-mix(in srgb, var(--blue) 22%, var(--surface)); color: var(--text); }
+.hw-day-header.thu { background: var(--surface-muted); color: var(--text); }
 .day-header.fri,
-.hw-day-header.fri { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--text); }
+.hw-day-header.fri { background: var(--surface-muted); color: var(--text); }
 
 .day-name-wrap { display: flex; flex-direction: column; gap: 4px; }
 .day-date { color: var(--muted); font-size: 0.78rem; font-weight: 650; }
@@ -570,20 +588,31 @@ h1 {
 .lesson,
 .hw-item {
   border-bottom: 1px solid var(--border);
-  padding: 14px 16px;
-  transition: background 0.15s ease;
+  padding: 16px;
 }
 
 .lesson:last-child,
 .hw-item:last-child { border-bottom: none; }
 
-.lesson:hover,
-.hw-item:hover { background: var(--accent-soft); }
+.lesson-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 12px;
+}
 
-.lesson-time { font-size: 0.82rem; margin-bottom: 6px; }
+.lesson-time { font-size: 0.82rem; }
 .lesson-name,
 .hw-subject { color: var(--text); font-size: 1rem; font-weight: 850; }
-.lesson-room { font-size: 0.86rem; margin-top: 4px; }
+.lesson-title {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lesson-name { line-height: 1.25; }
+.lesson-room { font-size: 0.84rem; }
 .lesson-time,
 .lesson-room,
 .hw-subject,
@@ -592,22 +621,31 @@ h1 {
   display: flex;
   gap: 7px;
 }
+.lesson-time,
+.lesson-room {
+  background: color-mix(in srgb, var(--surface-muted) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 8px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 9px;
+}
 .lesson.active {
-  background: var(--accent-soft);
-  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--current-soft) 76%, var(--surface-strong));
+  border-left: 4px solid var(--current);
   padding-left: 12px;
 }
 
 .badge-now {
-  background: var(--accent);
+  background: color-mix(in srgb, var(--current) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--current) 46%, transparent);
   border-radius: 999px;
-  color: #ffffff;
+  color: var(--current-strong);
   display: inline-block;
   font-size: 0.68rem;
   font-weight: 900;
-  margin-left: 6px;
-  padding: 2px 7px;
-  vertical-align: middle;
+  line-height: 1;
+  padding: 6px 8px;
 }
 
 .no-classes { font-size: 0.88rem; padding: 28px 16px; text-align: center; }
@@ -623,6 +661,7 @@ h1 {
 }
 
 .weeks-hw {
+  align-items: start;
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -692,14 +731,36 @@ footer {
 }
 
 @media (max-width: 1100px) {
-  .app-header,
-  .hero-panel { grid-template-columns: 1fr; }
-  .header-actions { align-items: stretch; justify-content: space-between; }
-  .quick-links { flex-wrap: wrap; }
-  .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app-header { grid-template-columns: minmax(180px, 1fr); }
+  .header-actions {
+    align-items: stretch;
+    justify-content: space-between;
+  }
+  nav { flex: 1 1 320px; }
+  .quick-links { flex: 1 1 320px; flex-wrap: wrap; }
+  .theme-toggle { margin-left: auto; }
+  .live-card { grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.25fr); }
+  .week { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
+  .app-header,
+  .live-card,
+  .weeks-hw { grid-template-columns: 1fr; }
+  .week { grid-template-columns: 1fr; }
+  .header-actions { flex-wrap: wrap; }
+  .quick-links,
+  nav { flex: 1 1 100%; }
+  .theme-toggle { margin-left: 0; }
+  #clock,
+  #status { min-height: 56px; }
+  .status-next {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+}
+
+@media (max-width: 900px) {
   .app-shell { padding: 12px 12px 28px; }
   .app-header {
     gap: 10px;
@@ -776,12 +837,10 @@ footer {
   h1 { font-size: 2.55rem; }
   .hero-panel,
   .live-card,
-  .week,
   .weeks-hw { grid-template-columns: 1fr; }
+  .live-card { gap: 12px; }
   .section-title { align-items: start; flex-direction: column; }
   .chevron { display: inline; }
-  .day:hover,
-  .hw-day:hover { box-shadow: none; transform: none; }
   .day-body {
     opacity: 1;
     transform: translateY(0);
@@ -797,8 +856,79 @@ footer {
     transform: translateY(-6px);
   }
   .day.collapsed .chevron { transform: rotate(-90deg); }
+  .lesson { padding: 18px 16px; }
+  .lesson-name { font-size: 1.05rem; line-height: 1.3; }
+  .lesson-meta { gap: 10px; margin-top: 14px; }
+  .lesson-time,
+  .lesson-room {
+    flex: 1 1 136px;
+    font-size: 0.88rem;
+    justify-content: flex-start;
+    min-height: 42px;
+    padding: 9px 11px;
+  }
   .hw-day:not(.today):not(.expanded) .hw-body { display: none; }
   footer { display: none; }
+}
+
+@media (max-width: 520px) {
+  .app-shell { padding: 8px 8px 24px; }
+  main { padding-top: 12px; }
+  .app-header,
+  .live-card,
+  .screen-panel {
+    border-radius: 8px;
+  }
+  .screen-panel { padding: 14px; }
+  .section-title {
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+  .section-title h2,
+  #section-hw h1 {
+    font-size: 1.45rem;
+    line-height: 1.1;
+  }
+  .day-header,
+  .hw-day-header {
+    min-height: 66px;
+    padding: 13px 14px;
+  }
+  .lesson { padding: 16px 14px; }
+  .lesson-meta {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+  .lesson-time,
+  .lesson-room {
+    width: 100%;
+  }
+  #clock,
+  #status {
+    padding: 10px 12px;
+  }
+  #clock {
+    min-height: 56px;
+  }
+  .status-pair .room {
+    display: block;
+    margin-left: 0;
+    margin-top: 3px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell { padding-inline: 6px; }
+  .brand-caption { display: none; }
+  nav button {
+    font-size: 0.82rem;
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .lesson-name { font-size: 1rem; }
+  .badge-now { font-size: 0.64rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -871,11 +1001,6 @@ footer {
           <div id="clock"></div>
         </div>
         <div>
-          <div class="mini-label"><i class="inline-icon" data-lucide="calendar-range" aria-hidden="true"></i> Неделя</div>
-          <div id="week-range"></div>
-        </div>
-        <div>
-          <div class="mini-label"><i class="inline-icon" data-lucide="circle-check" aria-hidden="true"></i> Статус</div>
           <div id="status"></div>
         </div>
       </aside>
@@ -1195,10 +1320,6 @@ function render() {
   const todayData = isWeekend ? null : week.find(d => d.idx === todayIdx);
   renderStatus(todayData, nowMin);
 
-  document.getElementById('week-range').textContent =
-    (isWeekend ? 'Следующая неделя: ' : 'Текущая неделя: ') +
-    week[0].dateLabel + ' – ' + week[4].dateLabel;
-
   document.getElementById('clock').textContent =
     now.toLocaleDateString('ru-RU', { weekday:'long', day:'numeric', month:'long' }) +
     ', ' + now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
@@ -1236,9 +1357,14 @@ function render() {
         const div = document.createElement('div');
         div.className = 'lesson' + (active ? ' active' : '');
         div.innerHTML = `
-          <div class="lesson-time"><i class="inline-icon" data-lucide="clock" aria-hidden="true"></i>${l.time}${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}</div>
-          <div class="lesson-name">${l.name}</div>
-          <div class="lesson-room"><i class="inline-icon" data-lucide="map-pin" aria-hidden="true"></i>${l.room}</div>`;
+          <div class="lesson-title">
+            <div class="lesson-name">${l.name}</div>
+            ${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}
+          </div>
+          <div class="lesson-meta">
+            <div class="lesson-time"><i class="inline-icon" data-lucide="clock" aria-hidden="true"></i>${l.time}</div>
+            <div class="lesson-room"><i class="inline-icon" data-lucide="map-pin" aria-hidden="true"></i>${l.room}</div>
+          </div>`;
         bodyInner.appendChild(div);
       });
     }
