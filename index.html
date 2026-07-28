@@ -145,6 +145,29 @@ a:focus-visible {
   color: var(--muted);
 }
 
+.group-picker {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.group-picker label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.group-picker select {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
 .brand-caption {
   display: block;
   font-size: 0.78rem;
@@ -1073,6 +1096,14 @@ footer {
           <p class="eyebrow section-kicker"><i data-lucide="book-open-check" aria-hidden="true"></i>Пары</p>
           <h2>Расписание занятий</h2>
         </div>
+        <div class="group-picker">
+          <label for="group-select">Группа</label>
+          <select id="group-select" aria-label="Выберите группу">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
       </div>
       <div class="week" id="week"></div>
     </section>
@@ -1169,72 +1200,64 @@ function refreshIcons() {
 
 // ── Schedule data ──────────────────────────────────────────────────────────
 
-const lectures = {
-  1: { time: '8:30–10:00', room: 'Я208',
-    subjects: [
-      { name: 'МГ (лекция)',  dates: ['09.02','02.03','16.03','06.04','20.04','04.05','18.05'] },
-      { name: 'ФКХ (лекция)', dates: ['16.02','09.03','23.03','13.04','27.04','11.05','25.05'] },
-      { name: 'ПАТ (лекция)', dates: ['30.03'], room: 'Морф.к.' }
-    ]
+const semesterStart = new Date(2026, 8, 1);
+const semesterEnd = new Date(2027, 0, 30, 23, 59, 59);
+
+const groupSchedules = {
+  1: {
+    1: [{ time:'8:30–10:00', name:'МКвФ' }, { time:'11:10–12:40', name:'ИТ' }],
+    2: [{ time:'8:30–10:00', name:'ФКС' }, { time:'11:15–14:25', name:'УЭФ' }],
+    3: [{ time:'12:30–14:00', name:'ОФХ' }],
+    4: [{ time:'8:00–10:25', name:'ФЗ' }, { time:'11:10–12:40', name:'ФЛ' }],
+    5: [{ time:'8:30–10:00', name:'ФР' }, { time:'11:10–12:40', name:'ОФТ' }],
+    6: [{ time:'8:30–10:00', name:'МФА' }, { time:'11:30–13:00', name:'БЭ' }]
   },
-  2: { time: '9:10–10:40', room: 'Я208',
-    subjects: [
-      { name: 'МФА (лекция)', dates: ['10.02','24.02','03.03','17.03','31.03','14.04','28.04','12.05','19.05','26.05'] },
-      { name: 'ГИГ (лекция)', dates: ['17.02','10.03','24.03','07.04','21.04','05.05'] }
-    ]
+  2: {
+    1: [{ time:'8:00–10:25', name:'ИТ' }, { time:'11:10–12:40', name:'МКвФ' }],
+    2: [{ time:'8:00–10:25', name:'МФА' }, { time:'11:10–12:40', name:'ФЛ' }],
+    3: [{ time:'12:30–14:00', name:'ФЗ' }],
+    4: [{ time:'11:10–12:40', name:'ФКС' }],
+    5: [{ time:'8:30–10:00', name:'ОФТ' }, { time:'11:10–12:40', name:'ОФХ' }],
+    6: [{ time:'8:00–10:25', name:'УЭФ' }, { time:'11:30–13:00', name:'БЭ' }]
   },
-  3: { time: '9:10–10:40', room: 'Я208',
-    subjects: [
-      { name: 'МБХ (лекция)', dates: ['11.02','25.02','11.03','25.03','08.04','22.04','06.05'] },
-      { name: 'БОТ (лекция)', dates: ['18.02','04.03','18.03','01.04','15.04','29.04','13.05'] }
-    ]
-  },
-  4: { time: '9:10–10:40', room: 'Я208',
-    subjects: [
-      { name: 'ХПФ (лекция)', dates: ['12.02','26.02','12.03','26.03','09.04','23.04','07.05'] },
-      { name: 'ПДвФ (лекция)', dates: ['19.02','05.03','19.03','02.04','16.04','30.04','14.05'] }
-    ]
-  },
-  5: { time: '9:10–10:40', room: 'Я208',
-    subjects: [
-      { name: 'ОФХ (лекция)', dates: ['20.02','06.03','20.03','10.04','24.04','08.05','15.05','22.05','29.05','05.06'] },
-      { name: 'ПАТ (лекция)', dates: ['13.02','27.02','13.03','27.03','03.04','17.04'], room: 'Морф.к.' }
-    ]
-  },
-  '5b': { time: '15:20–16:50', room: 'Я208',
-    subjects: [
-      { name: 'ФР (лекция)', dates: ['13.02','20.02','27.02','06.03','13.03','20.03','27.03','03.04','10.04','17.04','24.04'] }
-    ]
+  3: {
+    1: [{ time:'8:30–10:00', name:'ФР' }, { time:'11:10–12:40', name:'ОФХ' }],
+    2: [{ time:'8:00–11:10', name:'УЭФ' }, { time:'11:30–13:00', name:'ОФР' }],
+    3: [{ time:'12:30–14:00', name:'ОФТ' }],
+    4: [{ time:'8:30–10:00', name:'ФКС' }, { time:'11:10–12:40', name:'ФЗ' }],
+    5: [{ time:'8:30–10:00', name:'ИТ' }, { time:'11:10–12:40', name:'МФА' }],
+    6: [{ time:'8:30–10:00', name:'ФЛ' }, { time:'11:30–13:00', name:'БЭ' }]
   }
 };
 
-const fixedLessons = {
-  1: [
-    { time: '10:30–12:45', name: 'МФА', room: 'Я112' },
-    { time: '14:10–15:40', name: 'ГИГ', room: 'Дистант' }
-  ],
-  2: [
-    { time: '11:10–12:40', name: 'ФКХ', room: 'А205' },
-    { time: '13:10–14:40', name: 'БОТ', room: 'Комс-ая (3 эт)' }
-  ],
-  3: [
-    { time: '11:10–13:25', name: 'ОФХ', room: 'Я112' },
-    { time: '14:10–16:25', name: 'ПАТ', room: 'Морф. 4эт. 2к' },
-    { time: '16:50–18:20', name: 'ФКС', room: 'Стадион' }
-  ],
-  4: [
-    { time: '11:10–13:25', name: 'ФР', room: 'Комс-ая (2 эт)' },
-    { time: '14:10–15:40', name: 'ПДвФ', room: 'Я112' }
-  ],
-  5: [
-    { time: '11:10–12:40', name: 'МБХ', room: 'А215' },
-    { time: '13:30–15:00', name: 'МГ',  room: 'Аптека' }
-  ]
-};
+const datedLessons = [
+  { days:[1], time:'14:10–16:25', name:'ОФТ', room:'Я208', dates:['07.09','21.09','05.10','19.10','02.11','16.11','30.11'] },
+  { days:[1], time:'14:10–16:25', name:'ОФХ', room:'Я208', dates:['14.09','28.09','12.10','26.10','09.11','23.11','07.12','14.12','21.12','28.12'] },
+  { days:[2], time:'14:40–16:25', name:'ИТ', room:'Я208', dates:['01.09','15.09','29.09','13.10','27.10','10.11','24.11','08.12','15.12','22.12','29.12'] },
+  { days:[2], time:'14:40–16:25', name:'ФЗ', room:'Я208', dates:['08.09','22.09','06.10','20.10','03.11','17.11','01.12'] },
+  { days:[3], time:'8:00–10:25', name:'УЭФ', room:'Я208', dates:['02.09','09.09','16.09','23.09','30.09','07.10','14.10','21.10','11.11','18.11','02.12','16.12','23.12','13.01'] },
+  { days:[3], time:'9:45–11:15', name:'ФР', room:'Я208', dates:['02.09','16.09','30.09','14.10','28.10','11.11','25.11','02.12','16.12'] },
+  { days:[3], groups:[1,2], time:'9:45–11:15', name:'МКвФ', room:'Я208', dates:['09.09','23.09','07.10','21.10','18.11','09.12','23.12'] },
+  { days:[3], groups:[3], time:'9:45–11:15', name:'ОФР', room:'Укк', dates:['09.09','23.09','07.10','21.10','18.11','09.12','23.12'] },
+  { days:[4], time:'14:10–16:25', name:'МФА', room:'Я208', dates:['03.09','10.09','17.09','01.10','08.10','15.10','29.10','05.11','12.11','26.11','03.12'] },
+  { days:[4], time:'14:10–16:25', name:'ОФТ', room:'Я208', dates:['24.09','22.10','10.12'] },
+  { days:[4], time:'14:10–16:25', name:'ФР', room:'Я208', dates:['19.11'] },
+  { days:[4], time:'16:00–17:30', name:'ФР' },
+  { days:[5], time:'14:10–16:25', name:'ФЛ', room:'Я208', dates:['04.09','11.09','18.09','25.09','02.10','09.10','16.10','23.10','30.10','06.11','13.11'] },
+  { days:[6], time:'13:40–15:10', name:'БЭ', room:'Я208', dates:['05.09','12.09','19.09','26.09','03.10','10.10','17.10','24.10','31.10','07.11','14.11'] }
+];
 
-const dayNames    = { 1:'Понедельник', 2:'Вторник', 3:'Среда', 4:'Четверг', 5:'Пятница' };
-const dayShortMap = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri' };
+const dayNames    = { 1:'Понедельник', 2:'Вторник', 3:'Среда', 4:'Четверг', 5:'Пятница', 6:'Суббота' };
+const dayShortMap = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
 const mmNames     = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const groupSelect = document.getElementById('group-select');
+let selectedGroup = localStorage.getItem('schedule-group') || '1';
+groupSelect.value = selectedGroup;
+groupSelect.addEventListener('change', () => {
+  selectedGroup = groupSelect.value;
+  localStorage.setItem('schedule-group', selectedGroup);
+  render();
+});
 
 function fmtDateShort(d) {
   return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0');
@@ -1244,41 +1267,27 @@ function getDisplayWeekMonday(now) {
   const dow = now.getDay();
   const d = new Date(now);
   if (dow === 0) d.setDate(d.getDate() + 1);
-  else if (dow === 6) d.setDate(d.getDate() + 2);
   else d.setDate(d.getDate() - (dow - 1));
   d.setHours(0,0,0,0);
   return d;
 }
 
-function getLectureForDate(dayIdx, dateStr) {
-  const lec = lectures[dayIdx];
-  if (lec) {
-    for (const s of lec.subjects) {
-      if (s.dates.includes(dateStr)) return { time: lec.time, name: s.name, room: s.room || lec.room };
-    }
-  }
-  return null;
-}
-
 function buildWeekSchedule(now) {
   const monday = getDisplayWeekMonday(now);
   const week = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     const date = new Date(monday);
     date.setDate(monday.getDate() + i);
     const dayIdx = i + 1;
     const dateStr = fmtDateShort(date);
-    const lessons = [];
-    const lec1 = getLectureForDate(dayIdx, dateStr);
-    if (lec1) lessons.push(lec1);
-    if (fixedLessons[dayIdx]) lessons.push(...fixedLessons[dayIdx]);
-    if (dayIdx === 5) {
-      for (const s of lectures['5b'].subjects) {
-        if (s.dates.includes(dateStr)) {
-          lessons.push({ time: lectures['5b'].time, name: s.name, room: lectures['5b'].room });
-          break;
-        }
-      }
+    const isSemester = date >= semesterStart && date <= semesterEnd;
+    const lessons = isSemester
+      ? (groupSchedules[selectedGroup][dayIdx] || []).map(l => ({ ...l, room: l.room || '—' }))
+      : [];
+    if (isSemester) {
+      datedLessons
+        .filter(l => l.days.includes(dayIdx) && l.dates.includes(dateStr) && (!l.groups || l.groups.includes(Number(selectedGroup))))
+        .forEach(l => lessons.push({ time:l.time, name:l.name, room:l.room || '—' }));
     }
     lessons.sort((a, b) =>
       parseTime(a.time.replace(/\u2013/g,'-').split('-')[0].trim()) -
@@ -1373,7 +1382,7 @@ function render() {
   const now = new Date();
   const todayIdx = now.getDay();
   const nowMin = now.getHours()*60+now.getMinutes();
-  const isWeekend = todayIdx === 0 || todayIdx === 6;
+  const isWeekend = todayIdx === 0;
 
   const week = buildWeekSchedule(now);
   const weekEl = document.getElementById('week');
@@ -1445,7 +1454,7 @@ function render() {
 }
 
 const todayShort = dayShortMap[new Date().getDay()];
-const collapsedDaySet = new Set(['mon','tue','wed','thu','fri'].filter((day) => day !== todayShort));
+const collapsedDaySet = new Set(['mon','tue','wed','thu','fri','sat'].filter((day) => day !== todayShort));
 
 render();
 setInterval(render, 10000);
