@@ -1208,7 +1208,7 @@ const groupSchedules = {
     1: [{ time:'8:30–10:00', name:'МКвФ' }, { time:'11:10–12:40', name:'ИТ' }],
     2: [{ time:'8:30–10:00', name:'ФКС' }, { time:'11:15–14:25', name:'УЭФ' }],
     3: [{ time:'12:30–14:00', name:'ОФХ' }],
-    4: [{ time:'8:00–10:25', name:'ФЗ' }, { time:'11:10–12:40', name:'ФЛ' }],
+    4: [{ time:'8:00–10:25', name:'ФЗ' }, { time:'11:10–12:40', name:'ФЛ' }, { time:'16:00–18:25', name:'ФР' }],
     5: [{ time:'8:30–10:00', name:'ФР' }, { time:'11:10–12:40', name:'ОФТ' }],
     6: [{ time:'8:30–10:00', name:'МФА' }, { time:'11:30–13:00', name:'БЭ' }]
   },
@@ -1216,7 +1216,7 @@ const groupSchedules = {
     1: [{ time:'8:00–10:25', name:'ИТ' }, { time:'11:10–12:40', name:'МКвФ' }],
     2: [{ time:'8:00–10:25', name:'МФА' }, { time:'11:10–12:40', name:'ФЛ' }],
     3: [{ time:'12:30–14:00', name:'ФЗ' }],
-    4: [{ time:'11:10–12:40', name:'ФКС' }],
+    4: [{ time:'11:10–12:40', name:'ФКС' }, { time:'16:00–18:25', name:'ФР' }],
     5: [{ time:'8:30–10:00', name:'ОФТ' }, { time:'11:10–12:40', name:'ОФХ' }],
     6: [{ time:'8:00–10:25', name:'УЭФ' }, { time:'11:30–13:00', name:'БЭ' }]
   },
@@ -1224,7 +1224,7 @@ const groupSchedules = {
     1: [{ time:'8:30–10:00', name:'ФР' }, { time:'11:10–12:40', name:'ОФХ' }],
     2: [{ time:'8:00–11:10', name:'УЭФ' }, { time:'11:30–13:00', name:'ОФР' }],
     3: [{ time:'12:30–14:00', name:'ОФТ' }],
-    4: [{ time:'8:30–10:00', name:'ФКС' }, { time:'11:10–12:40', name:'ФЗ' }],
+    4: [{ time:'8:30–10:00', name:'ФКС' }, { time:'11:10–12:40', name:'ФЗ' }, { time:'16:00–18:25', name:'ФР' }],
     5: [{ time:'8:30–10:00', name:'ИТ' }, { time:'11:10–12:40', name:'МФА' }],
     6: [{ time:'8:30–10:00', name:'ФЛ' }, { time:'11:30–13:00', name:'БЭ' }]
   }
@@ -1243,7 +1243,6 @@ const datedLessons = [
   { days:[4], time:'14:10–16:25', name:'МФА', room:'Я208', dates:['03.09','10.09','17.09','01.10','08.10','15.10','29.10','05.11','12.11','26.11','03.12'] },
   { days:[4], time:'14:10–16:25', name:'ОФТ', room:'Я208', dates:['24.09','22.10','10.12'] },
   { days:[4], time:'14:10–16:25', name:'ФР', room:'Я208', dates:['19.11'] },
-  { days:[4], time:'16:00–18:25', name:'ФР' },
   { days:[5], time:'14:10–16:25', name:'ФЛ', room:'Я208', dates:['04.09','11.09','18.09','25.09','02.10','09.10','16.10','23.10','30.10','06.11','13.11'] },
   { days:[6], time:'13:40–16:05', name:'БЭ', room:'Я208', dates:['05.09','12.09','19.09','26.09','03.10','10.10','17.10','24.10','31.10','07.11','14.11'] }
 ];
@@ -1265,6 +1264,12 @@ function fmtDateShort(d) {
 }
 
 function getDisplayWeekMonday(now) {
+  if (now < semesterStart) {
+    const firstWeek = new Date(semesterStart);
+    firstWeek.setDate(firstWeek.getDate() - ((firstWeek.getDay() + 6) % 7));
+    firstWeek.setHours(0,0,0,0);
+    return firstWeek;
+  }
   const dow = now.getDay();
   const d = new Date(now);
   if (dow === 0) d.setDate(d.getDate() + 1);
@@ -1389,7 +1394,11 @@ function render() {
   const weekEl = document.getElementById('week');
   weekEl.innerHTML = '';
 
-  const todayData = isWeekend ? null : week.find(d => d.idx === todayIdx);
+  const isSameDate = (a, b) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  const todayData = isWeekend ? null : week.find(d => isSameDate(d.date, now));
   renderStatus(todayData, nowMin);
 
   document.getElementById('clock').textContent =
@@ -1397,7 +1406,7 @@ function render() {
     ', ' + now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
 
   week.forEach(d => {
-    const isToday = !isWeekend && d.idx === todayIdx;
+    const isToday = !isWeekend && isSameDate(d.date, now);
     const dayEl = document.createElement('div');
     dayEl.className = 'day' + (isToday ? ' today' : '');
 
