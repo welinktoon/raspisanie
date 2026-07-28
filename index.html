@@ -1323,11 +1323,29 @@ const dayNames    = { 1:'Понедельник', 2:'Вторник', 3:'Сре�
 const dayShortMap = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
 const mmNames     = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 const groupSelect = document.getElementById('group-select');
-let selectedGroup = localStorage.getItem('schedule-group') || '1';
+const groupCookieName = 'schedule-group';
+
+function getCookie(name) {
+  const prefix = encodeURIComponent(name) + '=';
+  const item = document.cookie.split('; ').find(row => row.startsWith(prefix));
+  return item ? decodeURIComponent(item.slice(prefix.length)) : '';
+}
+
+function saveSelectedGroup(group) {
+  const secure = location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie =
+    encodeURIComponent(groupCookieName) + '=' + encodeURIComponent(group) +
+    '; Max-Age=31536000; Path=/; SameSite=Lax' + secure;
+  localStorage.setItem(groupCookieName, group);
+}
+
+const savedGroup = getCookie(groupCookieName) || localStorage.getItem(groupCookieName);
+let selectedGroup = ['1','2','3'].includes(savedGroup) ? savedGroup : '1';
 groupSelect.value = selectedGroup;
+saveSelectedGroup(selectedGroup);
 groupSelect.addEventListener('change', () => {
   selectedGroup = groupSelect.value;
-  localStorage.setItem('schedule-group', selectedGroup);
+  saveSelectedGroup(selectedGroup);
   render();
 });
 
