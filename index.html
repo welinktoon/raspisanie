@@ -1220,8 +1220,16 @@ footer {
           <p class="eyebrow section-kicker"><i data-lucide="clipboard-check" aria-hidden="true"></i>Задания</p>
           <h1>Домашние задания</h1>
         </div>
-        <div class="hw-subtitle" id="hw-subtitle"></div>
+        <div class="group-picker">
+          <label for="hw-group-select">Группа</label>
+          <select id="hw-group-select" aria-label="Выберите группу для домашних заданий">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
       </div>
+      <div class="hw-subtitle" id="hw-subtitle"></div>
       <div id="hw-loading">Загрузка...</div>
       <div id="hw-error"></div>
       <div class="weeks-hw" id="weeks-hw" style="display:none"></div>
@@ -1273,6 +1281,7 @@ menuToggle.addEventListener('click', () => {
 });
 
 let hwLoaded = false;
+let hwReady = false;
 
 function switchTab(tab) {
   document.getElementById('section-schedule').style.display = tab === 'schedule' ? '' : 'none';
@@ -1364,6 +1373,7 @@ const dayNames    = { 1:'Понедельник', 2:'Вторник', 3:'Сре�
 const dayShortMap = { 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
 const mmNames     = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 const groupSelect = document.getElementById('group-select');
+const hwGroupSelect = document.getElementById('hw-group-select');
 const groupCookieName = 'schedule-group';
 
 function getCookie(name) {
@@ -1382,12 +1392,29 @@ function saveSelectedGroup(group) {
 
 const savedGroup = getCookie(groupCookieName) || localStorage.getItem(groupCookieName);
 let selectedGroup = ['1','2','3'].includes(savedGroup) ? savedGroup : '1';
-groupSelect.value = selectedGroup;
-saveSelectedGroup(selectedGroup);
-groupSelect.addEventListener('change', () => {
-  selectedGroup = groupSelect.value;
+
+function syncGroupControls() {
+  [groupSelect, hwGroupSelect].forEach(select => {
+    if (select) select.value = selectedGroup;
+  });
+}
+
+function updateSelectedGroup(group) {
+  selectedGroup = group;
+  syncGroupControls();
   saveSelectedGroup(selectedGroup);
   render();
+  if (hwReady) renderHomework();
+}
+
+let allHomework = [];
+groupSelect.value = selectedGroup;
+syncGroupControls();
+saveSelectedGroup(selectedGroup);
+[groupSelect, hwGroupSelect].forEach(select => {
+  if (select) {
+    select.addEventListener('change', () => updateSelectedGroup(select.value));
+  }
 });
 
 function fmtDateShort(d) {
@@ -1690,32 +1717,53 @@ function buildHwWeek(monday, allHw, today, label) {
   return section;
 }
 
+function getHomeworkGroups(hw) {
+  const raw = hw.groups ?? hw.group ?? hw.group_id ?? hw.groupId ?? hw.hw_group ?? hw.hwGroup;
+  if (raw === undefined || raw === null || raw === '') return [];
+  if (Array.isArray(raw)) return raw.map(String);
+  return String(raw)
+    .split(/[,\s;|/]+/)
+    .map(group => group.trim())
+    .filter(Boolean);
+}
+
+function isHomeworkForSelectedGroup(hw) {
+  const groups = getHomeworkGroups(hw);
+  return !groups.length || groups.includes(selectedGroup);
+}
+
+function renderHomework() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayISO = toISO(today);
+  const hw = allHomework
+    .filter(h => h.deadline >= todayISO)
+    .filter(isHomeworkForSelectedGroup);
+
+  const thisMonday = getMonday(today);
+  const nextMonday = new Date(thisMonday); nextMonday.setDate(thisMonday.getDate() + 7);
+  const nextFri = new Date(nextMonday); nextFri.setDate(nextMonday.getDate() + 4);
+
+  document.getElementById('hw-loading').style.display = 'none';
+  document.getElementById('hw-subtitle').textContent =
+    'Группа ' + selectedGroup + ' · ' + fmtFull(thisMonday) + ' – ' + fmtFull(nextFri);
+
+  const weeksEl = document.getElementById('weeks-hw');
+  weeksEl.innerHTML = '';
+  weeksEl.style.display = '';
+  weeksEl.appendChild(buildHwWeek(thisMonday, hw, today, 'Текущая неделя'));
+  weeksEl.appendChild(buildHwWeek(nextMonday, hw, today, 'Следующая неделя'));
+  refreshIcons();
+}
+
 async function loadHw() {
   try {
     const res  = await fetch(SCRIPT_URL + '?action=list');
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'ошибка API');
 
-    const today    = new Date(); today.setHours(0,0,0,0);
-    const todayISO = toISO(today);
-    const hw       = (json.data || [])
-      .map(h => ({ ...h, deadline: parseToISO(h.deadline) }))
-      .filter(h => h.deadline >= todayISO);
-
-    const thisMonday = getMonday(today);
-    const nextMonday = new Date(thisMonday); nextMonday.setDate(thisMonday.getDate() + 7);
-    const nextFri    = new Date(nextMonday);  nextFri.setDate(nextMonday.getDate() + 4);
-
-    document.getElementById('hw-loading').style.display = 'none';
-    document.getElementById('hw-subtitle').textContent  =
-      fmtFull(thisMonday) + ' – ' + fmtFull(nextFri);
-
-    const weeksEl = document.getElementById('weeks-hw');
-    weeksEl.innerHTML = '';
-    weeksEl.style.display = '';
-    weeksEl.appendChild(buildHwWeek(thisMonday, hw, today, 'Текущая неделя'));
-    weeksEl.appendChild(buildHwWeek(nextMonday, hw, today, 'Следующая неделя'));
-    refreshIcons();
+    allHomework = (json.data || []).map(h => ({ ...h, deadline: parseToISO(h.deadline) }));
+    hwReady = true;
+    renderHomework();
 
   } catch (e) {
     document.getElementById('hw-loading').style.display = 'none';

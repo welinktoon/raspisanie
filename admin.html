@@ -217,6 +217,7 @@ textarea { resize: vertical; }
   letter-spacing: 0.5px;
   margin-bottom: 5px;
 }
+.form-row { display: grid; grid-template-columns: 1fr 150px; gap: 10px; }
 .dates-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 #save-status { text-align: center; font-size: 0.85rem; color: var(--accent); min-height: 22px; margin-top: 8px; }
 
@@ -249,7 +250,24 @@ textarea { resize: vertical; }
   gap: 12px;
 }
 .hw-row-info { flex: 1; min-width: 0; }
-.hw-row-subject { font-weight: 700; color: var(--text); font-size: 0.92rem; margin-bottom: 3px; }
+.hw-row-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.hw-row-subject { font-weight: 700; color: var(--text); font-size: 0.92rem; }
+.hw-row-group {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 7px;
+}
 .hw-row-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; overflow-wrap: anywhere; }
 .hw-row-meta { font-size: 0.73rem; color: color-mix(in srgb, var(--text-muted) 72%, transparent); margin-top: 5px; }
 .list-empty {
@@ -268,6 +286,7 @@ textarea { resize: vertical; }
   body { padding: 10px 10px 34px; }
   nav { margin-bottom: 14px; }
   .panel-top { align-items: flex-start; }
+  .form-row,
   .dates-row { grid-template-columns: 1fr; gap: 0; }
   .add-card { padding: 16px; }
   .hw-row { padding: 12px; }
@@ -300,15 +319,26 @@ textarea { resize: vertical; }
 
   <div class="add-card">
     <h2>Новое задание</h2>
-    <div class="form-group">
-      <label>Предмет</label>
-      <select id="f-subject" onchange="onSubjectChange()">
-        <option value="">— выбрать —</option>
-        <option>МГ</option><option>ФКХ</option><option>ПАТ</option>
-        <option>МФА</option><option>ГИГ</option><option>МБХ</option>
-        <option>БОТ</option><option>ХПФ</option><option>ПДвФ</option>
-        <option>ОФХ</option><option>ФР</option><option>ФКС</option>
-      </select>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Предмет</label>
+        <select id="f-subject" onchange="onSubjectChange()">
+          <option value="">— выбрать —</option>
+          <option>МГ</option><option>ФКХ</option><option>ПАТ</option>
+          <option>МФА</option><option>ГИГ</option><option>МБХ</option>
+          <option>БОТ</option><option>ХПФ</option><option>ПДвФ</option>
+          <option>ОФХ</option><option>ФР</option><option>ФКС</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Группа</label>
+        <select id="f-group">
+          <option value="">— выбрать —</option>
+          <option value="1">1 группа</option>
+          <option value="2">2 группа</option>
+          <option value="3">3 группа</option>
+        </select>
+      </div>
     </div>
     <div class="form-group">
       <label>Задание</label>
@@ -426,15 +456,18 @@ async function loadHw() {
 
 async function addHw() {
   const subject     = document.getElementById('f-subject').value;
+  const group       = document.getElementById('f-group').value;
   const text        = document.getElementById('f-text').value.trim();
   const lesson_date = document.getElementById('f-lesson-date').value;
   const deadline    = document.getElementById('f-deadline').value;
-  if (!subject || !text || !lesson_date || !deadline) { setStatus('Заполни все поля','#ef4444'); return; }
+  if (!subject || !group || !text || !lesson_date || !deadline) { setStatus('Заполни все поля','#ef4444'); return; }
   const btn = document.getElementById('add-btn');
   btn.disabled = true; setStatus('Сохранение...');
   try {
     const url = SCRIPT_URL + '?action=add' +
       '&subject=' + encodeURIComponent(subject) +
+      '&group=' + encodeURIComponent(group) +
+      '&groups=' + encodeURIComponent(group) +
       '&text=' + encodeURIComponent(text) +
       '&lesson_date=' + encodeURIComponent(lesson_date) +
       '&deadline=' + encodeURIComponent(deadline);
@@ -442,7 +475,7 @@ async function addHw() {
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'ошибка');
     setStatus('Сохранено','#2563eb');
-    ['f-subject','f-text','f-lesson-date','f-deadline'].forEach(id => document.getElementById(id).value = '');
+    ['f-subject','f-group','f-text','f-lesson-date','f-deadline'].forEach(id => document.getElementById(id).value = '');
     await loadHw();
   } catch (e) {
     setStatus('Ошибка: ' + e.message, '#ef4444');
@@ -467,6 +500,10 @@ function setStatus(msg, color) {
   if (msg === 'Сохранено') setTimeout(() => { el.textContent = ''; }, 2000);
 }
 
+function getHomeworkGroup(hw) {
+  return hw.group ?? hw.groups ?? hw.group_id ?? hw.groupId ?? hw.hw_group ?? hw.hwGroup ?? '';
+}
+
 function renderList() {
   const showPast = document.getElementById('show-past').checked;
   const today    = toISO(new Date());
@@ -486,9 +523,13 @@ function renderList() {
     byDate[date].forEach(hw => {
       const row = document.createElement('div');
       row.className = 'hw-row';
+      const hwGroup = getHomeworkGroup(hw);
       row.innerHTML = `
         <div class="hw-row-info">
-          <div class="hw-row-subject">${hw.subject}</div>
+          <div class="hw-row-head">
+            <div class="hw-row-subject">${hw.subject}</div>
+            ${hwGroup ? `<span class="hw-row-group">${hwGroup} группа</span>` : ''}
+          </div>
           <div class="hw-row-text">${hw.text}</div>
           <div class="hw-row-meta">пара: ${hw.lesson_date ? fmtISO(hw.lesson_date) : '—'}</div>
         </div>
