@@ -20,6 +20,9 @@
   --accent: #2563eb;
   --accent-strong: #1d4ed8;
   --accent-soft: rgba(37, 99, 235, 0.08);
+  --lecture: #b45309;
+  --lecture-strong: #92400e;
+  --lecture-soft: rgba(245, 158, 11, 0.14);
   --current: #2563eb;
   --current-strong: #1d4ed8;
   --current-soft: rgba(37, 99, 235, 0.06);
@@ -45,6 +48,9 @@
   --accent: #60a5fa;
   --accent-strong: #93c5fd;
   --accent-soft: rgba(96, 165, 250, 0.1);
+  --lecture: #fbbf24;
+  --lecture-strong: #fde68a;
+  --lecture-soft: rgba(251, 191, 36, 0.12);
   --current: #60a5fa;
   --current-strong: #93c5fd;
   --current-soft: rgba(96, 165, 250, 0.08);
@@ -674,11 +680,34 @@ h1 {
   padding-left: 12px;
 }
 
+.lesson.lecture {
+  background: color-mix(in srgb, var(--lecture-soft) 72%, var(--surface-strong));
+  border-left: 4px solid var(--lecture);
+  padding-left: 12px;
+}
+
+.lesson.lecture.active {
+  background: color-mix(in srgb, var(--lecture-soft) 62%, var(--current-soft));
+  border-left-color: var(--lecture);
+}
+
 .badge-now {
   background: color-mix(in srgb, var(--current) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--current) 46%, transparent);
   border-radius: 999px;
   color: var(--current-strong);
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.badge-lecture {
+  background: var(--lecture-soft);
+  border: 1px solid color-mix(in srgb, var(--lecture) 48%, transparent);
+  border-radius: 999px;
+  color: var(--lecture-strong);
   display: inline-block;
   font-size: 0.68rem;
   font-weight: 900;
@@ -1389,7 +1418,12 @@ function buildWeekSchedule(now) {
     if (isSemester) {
       datedLessons
         .filter(l => l.days.includes(dayIdx) && l.dates.includes(dateStr) && (!l.groups || l.groups.includes(Number(selectedGroup))))
-        .forEach(l => lessons.push({ time:l.time, name:l.name, room:l.room || '—' }));
+        .forEach(l => lessons.push({
+          time:l.time,
+          name:l.name,
+          room:l.room || '—',
+          type:l.type || (l.room === 'Я208' ? 'lecture' : 'practice')
+        }));
     }
     lessons.sort((a, b) =>
       parseTime(a.time.replace(/\u2013/g,'-').split('-')[0].trim()) -
@@ -1427,6 +1461,7 @@ function renderStatus(todayData, nowMin) {
   const el = document.getElementById('status');
   if (!todayData || !todayData.lessons.length) { el.innerHTML = ''; return; }
   const lessons = todayData.lessons;
+  const lessonLabel = (lesson) => lesson.type === 'lecture' ? `${lesson.name} (Л)` : lesson.name;
   let current = null, next = null;
   for (let i = 0; i < lessons.length; i++) {
     const r = getRange(lessons[i].time);
@@ -1443,7 +1478,7 @@ function renderStatus(todayData, nowMin) {
       <div class="status-summary">
         <div class="status-label">Первая пара</div>
         <div class="status-meta">${lessons[0].time} / ${lessons[0].room}</div>
-        <div class="status-main">${lessons[0].name} <span class="time-left">через ${fmtMin(firstRange.start-nowMin)}</span></div>
+        <div class="status-main">${lessonLabel(lessons[0])} <span class="time-left">через ${fmtMin(firstRange.start-nowMin)}</span></div>
       </div>`;
     return;
   }
@@ -1454,7 +1489,7 @@ function renderStatus(todayData, nowMin) {
     html += `
       <div class="status-current">
         <div class="status-label">Сейчас идет</div>
-        <div class="status-pair">${current.name}<span class="room">${current.room}</span></div>
+        <div class="status-pair">${lessonLabel(current)}<span class="room">${current.room}</span></div>
         <div class="status-elapsed">Прошло ${fmtMin(elapsed)} / осталось ${fmtMin(total-elapsed)}</div>
         <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
       </div>`;
@@ -1471,7 +1506,7 @@ function renderStatus(todayData, nowMin) {
         <div class="status-summary">
           <div class="status-label">Следующая</div>
           <div class="status-meta">${next.time} / ${next.room}</div>
-          <div class="status-main">${next.name} <span class="time-left">через ${fmtMin(next.start-nowMin)}</span></div>
+          <div class="status-main">${lessonLabel(next)} <span class="time-left">через ${fmtMin(next.start-nowMin)}</span></div>
         </div>
       </div>`;
   } else if (current) {
@@ -1533,10 +1568,12 @@ function render() {
         const r = getRange(l.time);
         const active = isToday && nowMin >= r.start && nowMin < r.end;
         const div = document.createElement('div');
-        div.className = 'lesson' + (active ? ' active' : '');
+        const isLecture = l.type === 'lecture';
+        div.className = 'lesson' + (isLecture ? ' lecture' : '') + (active ? ' active' : '');
         div.innerHTML = `
           <div class="lesson-title">
             <div class="lesson-name">${l.name}</div>
+            ${isLecture ? '<span class="badge-lecture">ЛЕКЦИЯ</span>' : ''}
             ${active ? '<span class="badge-now">СЕЙЧАС</span>' : ''}
           </div>
           <div class="lesson-meta">
