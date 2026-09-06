@@ -324,10 +324,10 @@ textarea { resize: vertical; }
         <label>Предмет</label>
         <select id="f-subject" onchange="onSubjectChange()">
           <option value="">— выбрать —</option>
-          <option>МГ</option><option>ФКХ</option><option>ПАТ</option>
-          <option>МФА</option><option>ГИГ</option><option>МБХ</option>
-          <option>БОТ</option><option>ХПФ</option><option>ПДвФ</option>
-          <option>ОФХ</option><option>ФР</option><option>ФКС</option>
+          <option>МКвФ</option><option>ИТ</option><option>ФКС</option>
+          <option>УЭФ</option><option>ОФХ</option><option>ФЗ</option>
+          <option>ФЛ</option><option>ФР</option><option>ОФТ</option>
+          <option>МФА</option><option>БЭ</option><option>ОФР</option>
         </select>
       </div>
       <div class="form-group">
@@ -373,9 +373,9 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwuSrAb4aoI79yMefk-b
 const PWD_HASH   = '51a9f2e1e7d282d8d2b41cf3848f13e94375650b808cb8ca09d2f992423041df';
 
 const SUBJECT_WD = {
-  'МФА':1,'ГИГ':1,'ФКХ':2,'БОТ':2,
-  'ОФХ':3,'ПАТ':3,'ФКС':3,
-  'ФР':4,'ХПФ':4,'ПДвФ':4,'МБХ':5,'МГ':5
+  'МКвФ':1,'ИТ':1,'ФКС':2,'УЭФ':2,
+  'ОФХ':3,'ФЗ':4,'ФЛ':4,'ФР':4,
+  'ОФТ':5,'МФА':6,'БЭ':6,'ОФР':2
 };
 const WD_NAMES = ['вс','пн','вт','ср','чт','пт','сб'];
 let allHw = [];
